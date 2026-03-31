@@ -92,7 +92,7 @@ const html = `
                             </p>
 
                             <!-- BUTTON -->
-                            <a href="${FRONTEND_URL}/login/login/login.html"
+                            <a href="${FRONTEND_URL}/login/login.html"
                                style="display:inline-block;margin-top:20px;padding:14px 28px;
                                background:linear-gradient(135deg,#ff4d79,#ff758c);
                                color:#ffffff;text-decoration:none;border-radius:8px;
@@ -103,8 +103,8 @@ const html = `
                             <!-- FALLBACK LINK -->
                             <p style="margin-top:20px;font-size:12px;color:#888;">
                                 Or copy & paste this link:<br>
-                                <a href="${FRONTEND_URL}/login/login/login.html" style="color:#6a11cb;">
-                                    ${FRONTEND_URL}/login/login/login.html
+                                <a href="${FRONTEND_URL}/login/login.html" style="color:#6a11cb;">
+                                    ${FRONTEND_URL}/login/login.html
                                 </a>
                             </p>
 
