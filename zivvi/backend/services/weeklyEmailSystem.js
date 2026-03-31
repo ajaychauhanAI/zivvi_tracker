@@ -138,7 +138,7 @@ function generateEmailHTML(userName, report) {
             </table>
 
             <div style="text-align:center;margin:25px 0;">
-                <a href="https://zivvi-tracker.vercel.app/login/login.html" target="_blank" 
+                <a href="http://localhost:3000/login/login.html" target="_blank" 
                    style="background:#6366f1;color:#ffffff;padding:12px 20px;
                           text-decoration:none;border-radius:8px;
                           font-size:14px;font-weight:bold;display:inline-block;">

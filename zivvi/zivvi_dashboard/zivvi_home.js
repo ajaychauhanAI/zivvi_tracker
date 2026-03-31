@@ -24,7 +24,7 @@ let currentFilters = {
     date: "all"
 };
 
-const BASE_URL = "https://zivvi-tracker.onrender.com"; // Backend URL - Change this to your actual backend URL
+const BASE_URL = "http://localhost:5000"; // Backend URL - Change this to your actual backend URL
 
 // ==============================
 // 📌 PAGE NAVIGATION SYSTEM
