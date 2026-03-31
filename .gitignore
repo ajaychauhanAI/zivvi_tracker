@@ -1,2 +1,4 @@
-git rm -r --cached node_modules
-git rm --cached .env
+node_modules
+.env
+.DS_Store
+package-lock.json
