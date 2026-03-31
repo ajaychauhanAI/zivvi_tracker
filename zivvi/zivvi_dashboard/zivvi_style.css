@@ -1,0 +1,759 @@
+/* ================= EXISTING (UNCHANGED) ================= */
+:root { 
+    --p: #6366f1;
+    --bg: #050507;
+    --text: #ffffff;
+    --card-bg: rgba(255, 255, 255, 0.02);
+    --border: rgba(255, 255, 255, 0.08);
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: #fff;
+    overflow-x: hidden;
+}
+
+main {
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* 🔥 HOVER = PREMIUM FLOAT */
+.glass-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
+}
+
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='20' viewBox='0 0 20 20' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M5 7l5 5 5-5'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+
+select option {
+   background: #0b0b0f;
+   color: #fff;
+}
+
+.skeleton {
+   background: linear-gradient(90deg, #111 25%, #222 50%, #111 75%);
+   background-size: 200% 100%;
+   animation: loading 1.5s infinite;
+}
+
+.btn-elite { 
+    background: linear-gradient(135deg, #6366f1, #a855f7); 
+    box-shadow: 0 10px 30px -5px rgba(99, 102, 241, 0.4);
+    transition: 0.3s;
+}
+.btn-elite:hover { transform: scale(1.02); filter: brightness(1.1); }
+
+.nav-link.active { background: rgba(99, 102, 241, 0.1); color: #818cf8; border-right: 4px solid #6366f1; }
+
+/* Shimmer Loading */
+.shimmer {
+    background: linear-gradient(90deg, #111 25%, #222 50%, #111 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+@keyframes loading { to { background-position: -200% 0; } }
+
+/* ================= 🔥 NEW LIGHT/DARK SYSTEM ================= */
+
+/* 🌙 DARK MODE */
+.dark {
+    --bg: #050507;
+    --text: #ffffff;
+    --card-bg: rgba(255, 255, 255, 0.02);
+    --border: rgba(255, 255, 255, 0.08);
+}
+
+/* ☀️ PREMIUM LIGHT MODE */
+.light {
+    --bg: #f6f8ff;
+    --text: #0f172a;
+
+    /* 🔥 layered card system */
+    --card-bg: rgba(255, 255, 255, 0.75);
+    --card-solid: #ffffff;
+
+    /* 🔥 premium border */
+    --border: rgba(15, 23, 42, 0.06);
+
+    /* 🔥 shadow system */
+    --shadow-sm: 0 4px 12px rgba(0,0,0,0.04);
+    --shadow-md: 0 10px 30px rgba(0,0,0,0.06);
+    --shadow-lg: 0 25px 60px rgba(0,0,0,0.08);
+
+    /* 🔥 gradient glow */
+    --accent-glow: rgba(99,102,241,0.12);
+}
+
+/* ================= GLOBAL ================= */
+body {
+    background: var(--bg);
+    color: var(--text);
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* 🔥 PREMIUM BACKGROUND */
+.light body {
+    background: radial-gradient(
+        circle at 20% 10%,
+        #eef2ff 0%,
+        #f6f8ff 40%,
+        #ffffff 100%
+    );
+}
+
+/* ================= GLASS CARD ================= */
+.glass-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    backdrop-filter: blur(5px);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.35s ease;
+    position: relative;
+}
+
+/* 🔥 HOVER EFFECT */
+.glass-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* 🔥 GLOW EFFECT */
+.light .glass-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at top right, var(--accent-glow), transparent 60%);
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* ================= SIDEBAR ================= */
+.light aside {
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(25px);
+    border-right: 1px solid rgba(0,0,0,0.06);
+}
+
+/* ================= INPUTS ================= */
+.light input,
+.light select {
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.03);
+    color: #0f172a;
+}
+
+.light input:focus,
+.light select:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+}
+
+/* SELECT FIX */
+.light select {
+    background-color: #ffffff;
+    color: #111;
+}
+
+.light select option {
+    background: #ffffff;
+    color: #111;
+}
+
+/* ================= BUTTON ================= */
+.light .btn-elite {
+    background: linear-gradient(135deg, #6366f1, #9333ea);
+    box-shadow: 0 12px 25px rgba(99,102,241,0.25);
+}
+
+.light .btn-elite:hover {
+    box-shadow: 0 18px 40px rgba(99,102,241,0.35);
+}
+
+/* ================= TEXT FIX ================= */
+.light .text-white\/30 { color: rgba(15,23,42,0.4); }
+.light .text-white\/40 { color: rgba(15,23,42,0.5); }
+.light .text-white\/60 { color: rgba(15,23,42,0.7); }
+.light .text-white { color: #0f172a; }
+
+/* ================= SKELETON ================= */
+.light .skeleton,
+.light .shimmer {
+    background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+}
+
+/* ================= NAV ACTIVE ================= */
+.light .nav-link.active {
+    background: rgba(99, 102, 241, 0.15);
+    color: #4f46e5;
+}
+
+/* ================= 🔥 ANALYTICS CARDS FIX ================= */
+
+/* DARK CARD → LIGHT PREMIUM */
+.light .bg-\[\#060608\]\/90,
+.light .bg-\[\#0b0b0f\]\/90 {
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+}
+
+/* TEXT FIX INSIDE THESE */
+.light .bg-\[\#060608\]\/90 h3,
+.light .bg-\[\#0b0b0f\]\/90 h3 {
+    color: #0f172a !important;
+}
+
+.light .bg-\[\#060608\]\/90 p,
+.light .bg-\[\#0b0b0f\]\/90 p {
+    color: rgba(15,23,42,0.6) !important;
+}
+
+/* ================= 🔥 SMART HELPER CARD ================= */
+
+.light .smart-card,
+.light #smartHelper,
+.light .money-guide {
+    background: linear-gradient(
+        135deg,
+        rgba(255,255,255,0.9),
+        rgba(255,255,255,0.7)
+    );
+    border: 1px solid rgba(0,0,0,0.06);
+    backdrop-filter: blur(25px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+}
+
+/* TEXT */
+.light #smartHelper h3,
+.light #smartHelper p {
+    color: #0f172a !important;
+}
+
+/* PROGRESS BAR */
+.light #smartHelper .bg-white\/5 {
+    background: rgba(0,0,0,0.06) !important;
+}
+
+/* ================= 🔥 PROFILE CARD ================= */
+
+.light .bg-\[\#0b0b0f\]\/90 {
+    background: linear-gradient(
+        135deg,
+        rgba(255,255,255,0.95),
+        rgba(255,255,255,0.75)
+    ) !important;
+
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+}
+
+/* NAME + EMAIL */
+.light #user-name {
+    color: #0f172a !important;
+}
+
+.light #user-email {
+    color: rgba(15,23,42,0.5) !important;
+}
+
+/* LOGOUT BUTTON PREMIUM */
+.light button {
+    backdrop-filter: blur(10px);
+}
+
+.light button.bg-gradient-to-r {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+    border: none;
+    box-shadow: 0 10px 25px rgba(239,68,68,0.25);
+}
+
+/* ================= 🔥 STATUS COLORS ================= */
+
+.light .text-emerald-400 {
+    color: #10b981 !important;
+}
+
+.light .text-purple-400 {
+    color: #9333ea !important;
+}
+
+.light .text-indigo-400 {
+    color: #6366f1 !important;
+}
+
+/* ================= 🔥 EXTRA POLISH ================= */
+
+/* REMOVE DARK OVERLAY */
+.light .bg-black\/40 {
+    background: rgba(255,255,255,0.6) !important;
+}
+
+/* DIVIDERS */
+.light .border-white\/5 {
+    border-color: rgba(0,0,0,0.06) !important;
+}
+
+/* ICON BACKGROUND */
+.light .bg-indigo-900\/40 {
+    background: rgba(99,102,241,0.1) !important;
+}
+
+/* ================= 🔥 TEXT VISIBILITY FIX ================= */
+
+/* ALL WHITE TEXT → DARK IN LIGHT MODE */
+.light .text-white {
+    color: #0f172a !important;
+}
+
+.light .text-white\/90 {
+    color: rgba(15,23,42,0.9) !important;
+}
+
+.light .text-white\/80 {
+    color: rgba(15,23,42,0.8) !important;
+}
+
+.light .text-white\/70 {
+    color: rgba(15,23,42,0.7) !important;
+}
+
+.light .text-white\/60 {
+    color: rgba(15,23,42,0.65) !important;
+}
+
+.light .text-white\/50 {
+    color: rgba(15,23,42,0.55) !important;
+}
+
+.light .text-white\/40 {
+    color: rgba(15,23,42,0.5) !important;
+}
+
+.light .text-white\/30 {
+    color: rgba(15,23,42,0.4) !important;
+}
+
+.light .text-white\/20 {
+    color: rgba(15,23,42,0.3) !important;
+}
+
+.light .text-white\/10 {
+    color: rgba(15,23,42,0.2) !important;
+}
+
+/* ================= 🔥 HEADINGS FIX ================= */
+.light h1,
+.light h2,
+.light h3,
+.light h4 {
+    color: #0f172a !important;
+}
+
+/* ================= 🔥 LABELS (IMPORTANT) ================= */
+.light label,
+.light span,
+.light p {
+    color: inherit;
+}
+
+/* ================= 🔥 CHECKBOX VISIBILITY ================= */
+.light input[type="checkbox"] {
+    accent-color: #6366f1;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.2);
+}
+
+/* ================= 🔥 CARD TITLE FIX ================= */
+.light .uppercase {
+    color: rgba(15,23,42,0.5) !important;
+}
+
+#heatmapTooltip {
+    position: fixed; /* 🔥 absolute → fixed (IMPORTANT FIX) */
+    top: 0;
+    left: 0;
+
+    border-radius: 16px;
+
+    /* 🎨 LIGHT MODE */
+    background: rgba(255, 255, 255, 0.95);
+    color: #111;
+
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+
+    pointer-events: none;
+
+    z-index: 99999; /* 🔥 ULTRA HIGH */
+
+    backdrop-filter: blur(12px);
+
+    transform: translate3d(0,0,0); /* 🔥 GPU layer fix */
+
+    opacity: 0;
+    transition: opacity 0.15s ease;
+
+    will-change: transform, top, left;
+}
+
+/* 🌙 DARK MODE */
+.dark #heatmapTooltip {
+    background: rgba(0, 0, 0, 0.9);
+    color: #fff;
+
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+}
+
+/* 🔥 SHOW STATE */
+#heatmapTooltip:not(.hidden) {
+    opacity: 1;
+}
+
+
+.guide-content {
+    display: none;
+}
+
+.guide-item.active .guide-content {
+    display: block;
+}
+
+/* ================= 🔥 CONFIRM INPUT FIX ================= */
+
+.light .danger-modal input {
+
+    /* 🎯 BETTER INTEGRATION */
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+
+    /* 🎯 TEXT */
+    color: #0f172a;
+    font-weight: 600;
+
+    /* 🎯 BORDER */
+    border: 1px solid rgba(0,0,0,0.12);
+
+    /* 🎯 SHADOW (PREMIUM DEPTH) */
+    box-shadow:
+        inset 0 2px 4px rgba(0,0,0,0.04),
+        0 6px 20px rgba(0,0,0,0.06);
+
+    /* 🎯 SMOOTH UI */
+    transition: all 0.25s ease;
+}
+
+/* 🔥 PLACEHOLDER FIX */
+.light .danger-modal input::placeholder {
+    color: rgba(15,23,42,0.45);
+    font-weight: 500;
+}
+
+/* 🔥 FOCUS STATE (IMPORTANT) */
+.light .danger-modal input:focus {
+    border-color: #ef4444;
+    box-shadow:
+        0 0 0 3px rgba(239,68,68,0.15),
+        0 10px 25px rgba(239,68,68,0.1);
+}
+
+/* 🔥 ERROR STATE (OPTIONAL - NEXT LEVEL) */
+.light .danger-modal input.error {
+    border-color: #dc2626;
+    background: #fff5f5;
+}
+
+@media (max-width: 768px){
+
+  body{
+    flex-direction: column;
+  }
+
+  /* ===== SIDEBAR HIDE ===== */
+  aside{
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 260px;
+    height: 100vh;
+    z-index: 999;
+    transition: 0.3s ease;
+  }
+
+  aside.active{
+    left: 0;
+  }
+
+  /* ===== OVERLAY ===== */
+  .overlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 998;
+    display: none;
+  }
+
+  .overlay.active{
+    display: block;
+  }
+
+  main{
+    padding: 20px !important;
+  }
+
+  header{
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .grid{
+    grid-template-columns: 1fr !important;
+  }
+
+  .grid-cols-12{
+    grid-template-columns: 1fr !important;
+  }
+
+  .col-span-8,
+  .col-span-4,
+  .col-span-12{
+    grid-column: span 1 !important;
+  }
+
+  .glass-card{
+    padding: 20px !important;
+    border-radius: 20px;
+  }
+
+  h1{
+    font-size: 28px !important;
+  }
+
+  h2{
+    font-size: 22px !important;
+  }
+
+  input, select{
+    font-size: 14px;
+    padding: 12px !important;
+  }
+
+  button{
+    width: 100%;
+  }
+
+}
+
+/* ===== FIX CONTROL PANEL CENTER ===== */
+@media (max-width:768px){
+
+  /* HEADER CONTAINER FIX */
+  header{
+    width: 100%;
+  }
+
+  header > div{
+    width: 100%;
+    align-items: center !important;
+  }
+
+  /* MAIN CONTROL BOX */
+  header .flex.items-center.justify-between{
+    flex-direction: column;
+    align-items: center !important;
+    justify-content: center;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+    padding: 16px;
+    border-radius: 24px;
+  }
+
+  /* SYSTEM TEXT CENTER */
+  header .text-\[10px\]{
+    text-align: center;
+  }
+
+  /* RIGHT SIDE STACK */
+  header .flex.items-center.gap-3{
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* TIME CARD */
+  header .group.flex.items-center{
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* FILTER */
+  #dateFilter{
+    width: 100%;
+    text-align: center;
+  }
+
+}
+
+/* ================= 🔥 HEATMAP FINAL FIX (NO HTML CHANGE) ================= */
+
+@media (max-width:768px){
+
+  /* ❌ REMOVE SCROLL COMPLETELY */
+  #heatmapWrapper,
+  #heatmapContainer{
+    overflow: hidden !important;
+  }
+
+  /* 🔥 DAY LABELS FIX (Mon Tue etc) */
+  .grid.grid-cols-7.text-\[9px\]{
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: 10px;
+    margin-bottom: 6px;
+  }
+
+  /* 🔥 MAIN GRID FIX */
+  #heatmapGrid{
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr) !important;
+    gap: 5px !important;
+    width: 100%;
+  }
+
+  /* 🔥 BOX PERFECT SQUARE */
+  #heatmapGrid > div{
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 8px;
+  }
+
+  /* 🔥 REMOVE MIN WIDTH (IMPORTANT) */
+  #heatmapGrid{
+    min-width: 0 !important;
+  }
+
+}
+
+/* ================= 🔥 REMOVE LEFT SIDE DAYS ================= */
+
+#heatmapLabels{
+  display: none !important;
+}
+
+/* ================= 🔥 FORCE DAYS ON TOP ================= */
+
+/* jo upar wala days row hai usko properly align karo */
+.grid.grid-cols-7.text-\[9px\]{
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
+  font-size: 10px;
+  margin-bottom: 8px;
+}
+
+/* ================= 🔥 GRID ALIGNMENT ================= */
+
+#heatmapGrid{
+  grid-template-columns: repeat(7, 1fr) !important;
+}
+
+/* ================= 🔥 MOBILE FIX ================= */
+
+@media (max-width:768px){
+
+  /* ensure top days visible */
+  .grid.grid-cols-7.text-\[9px\]{
+    font-size: 9px;
+  }
+
+  /* remove any side spacing issue */
+  #heatmapWrapper{
+    padding-left: 0 !important;
+  }
+
+}
+
+/* ================= 🔥 FINAL PREMIUM MOBILE HEADER ================= */
+
+@media (max-width:768px){
+
+  /* HEADER BAR */
+  body > div.md\:hidden{
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    backdrop-filter: blur(18px);
+    background: rgba(10,10,15,0.85);
+
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+
+    padding: 10px 14px;
+  }
+
+  /* ===== MENU BUTTON ===== */
+  body > div.md\:hidden button{
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 12px;
+
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+
+    font-size: 18px;
+    z-index: 2;
+
+    transition: 0.25s ease;
+  }
+
+  body > div.md\:hidden button:active{
+    transform: scale(0.95);
+  }
+
+  /* ===== RIGHT PROFILE ===== */
+  body > div.md\:hidden .w-8{
+    display: none !important;
+  }
+
+  /* ===== FIX SIDEBAR OVERLAP ===== */
+  aside{
+    z-index: 1100;
+  }
+
+  #overlay{
+    z-index: 1050;
+  }
+
+}
+

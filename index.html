@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>ZIVVI | AI Finance Platform</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+
+/* ================= GLOBAL ================= */
+body{
+  font-family:'Inter',sans-serif;
+  background:#030305;
+  color:white;
+  overflow-x:hidden;
+}
+
+/* ================= CONTAINER ================= */
+.container{
+  max-width:1200px;
+  margin:auto;
+  padding:0 20px;
+}
+
+/* ================= BACKGROUND GLOW ================= */
+.bg-glow{
+  position:fixed;
+  width:600px;
+  height:600px;
+  background:radial-gradient(circle,#6366f155,transparent);
+  filter:blur(140px);
+  z-index:-1;
+}
+
+/* ================= GLASS ================= */
+.glass{
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.08);
+  backdrop-filter:blur(20px);
+  border-radius:20px;
+  transition:0.3s;
+}
+
+.glass:hover{
+  transform:translateY(-6px);
+  border-color:#6366f1;
+}
+
+/* ================= BUTTON ================= */
+.btn{
+  background:linear-gradient(135deg,#6366f1,#a855f7);
+  padding:12px 24px;
+  border-radius:12px;
+  font-weight:600;
+  transition:0.3s;
+}
+
+.btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 10px 30px rgba(99,102,241,0.5);
+}
+
+/* ================= HERO ================= */
+.hero-title{
+  font-size: clamp(36px, 6vw, 72px);
+  font-weight:900;
+  line-height:1.1;
+}
+
+/* ================= FLOAT ================= */
+.float{
+  animation:float 6s ease-in-out infinite;
+}
+
+@keyframes float{
+  0%{transform:translateY(0)}
+  50%{transform:translateY(-20px)}
+  100%{transform:translateY(0)}
+}
+
+/* ================= GRADIENT TEXT ================= */
+.gradient-text{
+  background:linear-gradient(135deg,#6366f1,#a855f7);
+  -webkit-background-clip:text;
+  color:transparent;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px){
+
+  /* ===== NAVBAR ===== */
+  header{
+    padding: 12px 16px;
+  }
+
+  header .container{
+    padding: 0;
+  }
+
+  header h1{
+    font-size: 16px;
+  }
+
+  header .w-10{
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Hide nav links */
+  nav{
+    display: none;
+  }
+
+  /* Buttons smaller */
+  header a{
+    font-size: 12px;
+  }
+
+  /* ===== HERO ===== */
+  section:first-of-type{
+    margin-top: 90px;
+    padding: 0 10px;
+  }
+
+  .hero-title{
+    font-size: 30px;
+    line-height: 1.2;
+  }
+
+  section:first-of-type p{
+    font-size: 14px;
+  }
+
+  /* Date badge */
+  #liveDate, #liveTime{
+    font-size: 12px;
+  }
+
+  /* Buttons */
+  .btn{
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .glass{
+    border-radius: 14px;
+  }
+
+  /* ===== SOCIAL ===== */
+  section:nth-of-type(2){
+    padding: 0 10px;
+  }
+
+  section:nth-of-type(2) .glass{
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  /* ===== PREVIEW CARDS ===== */
+  section:nth-of-type(3){
+    grid-template-columns: 1fr !important;
+    padding: 0 10px;
+  }
+
+  section:nth-of-type(3) .glass{
+    width: 100%;
+  }
+
+  /* ===== FEATURES ===== */
+  section:nth-of-type(4){
+    padding: 0 10px;
+  }
+
+  section:nth-of-type(4) h2{
+    font-size: 26px;
+  }
+
+  section:nth-of-type(4) .grid{
+    grid-template-columns: 1fr;
+  }
+
+  /* ===== HOW TO USE ===== */
+  section:nth-of-type(5){
+    padding: 0 10px;
+  }
+
+  section:nth-of-type(5) h2{
+    font-size: 26px;
+  }
+
+  section:nth-of-type(5) .grid{
+    grid-template-columns: 1fr;
+  }
+
+  /* ===== CTA ===== */
+  section:last-of-type{
+    padding: 0 10px;
+  }
+
+  section:last-of-type h2{
+    font-size: 24px;
+  }
+
+}
+
+#premium-datetime:hover {
+  border-color: rgba(99,102,241,0.5);
+  box-shadow: 0 0 20px rgba(99,102,241,0.3);
+}
+
+
+</style>
+
+</head>
+
+<body>
+
+<div class="bg-glow top-0 left-0"></div>
+<div class="bg-glow bottom-0 right-0"></div>
+
+<!-- ================= NAVBAR ================= -->
+
+<header class="fixed top-0 left-0 w-full z-50 backdrop-blur-xl bg-black/40 border-b border-white/10">
+
+  <div class="container flex justify-between items-center py-4">
+
+    <!-- LOGO -->
+    <div class="flex items-center gap-3 group cursor-pointer">
+
+      <!-- ⚡ SVG LOGO -->
+      <div class="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/30 transition duration-300 group-hover:scale-110">
+        
+        <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5">
+          <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"
+            fill="white"/>
+        </svg>
+
+      </div>
+
+      <!-- TEXT -->
+      <h1 class="text-lg font-extrabold tracking-tight">
+        ZIVVI<span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">.pro</span>
+      </h1>
+
+    </div>
+
+    <!-- NAV -->
+    <nav class="hidden md:flex items-center gap-8 text-sm text-white/60">
+
+      <a href="#" class="hover:text-white transition relative group">
+        Features
+        <span class="absolute left-0 -bottom-1 w-0 h-[2px] bg-indigo-500 transition-all group-hover:w-full"></span>
+      </a>
+
+      <a href="#" class="hover:text-white transition relative group">
+        Pricing
+        <span class="absolute left-0 -bottom-1 w-0 h-[2px] bg-indigo-500 transition-all group-hover:w-full"></span>
+      </a>
+
+      <a href="#" class="hover:text-white transition relative group">
+        About
+        <span class="absolute left-0 -bottom-1 w-0 h-[2px] bg-indigo-500 transition-all group-hover:w-full"></span>
+      </a>
+
+    </nav>
+
+    <!-- ACTIONS -->
+    <div class="flex items-center gap-4">
+
+      <a href="zivvi/login/login.html" 
+         class="text-white/70 hover:text-white transition text-sm">
+        Login
+      </a>
+
+      <a href="zivvi/login/login.html?type=register"
+         class="relative px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 transition duration-300 hover:shadow-lg hover:shadow-indigo-500/40 hover:-translate-y-[1px]">
+        Get Started
+      </a>
+
+    </div>
+
+  </div>
+
+</header>
+
+<!-- ================= HERO ================= -->
+
+<section class="container text-center mt-20">
+
+  <h1 class="hero-title">
+    Control Your Money <br>
+    <span class="gradient-text">With AI Intelligence</span>
+  </h1>
+
+  <p class="mt-6 text-white/60 max-w-xl mx-auto">
+    Smart analytics, real-time tracking, and predictive insights to help you grow your financial life.
+  </p>
+
+    <!-- 🔥 LIVE DATE & TIME -->
+  <div class="mt-6 flex justify-center">
+
+    <div class="relative flex items-center gap-3 px-6 py-2.5 rounded-full 
+              bg-white/5 backdrop-blur-xl border border-white/10 
+              shadow-lg shadow-black/30">
+
+      <!-- 📅 DATE -->
+      <span id="liveDate" class="text-white/70 text-sm"></span>
+
+      <!-- DOT -->
+      <span class="text-white/20">•</span>
+
+      <!-- ⏰ TIME -->
+      <span id="liveTime" class="text-white/90 text-sm font-medium"></span>
+
+    </div>
+
+  </div>
+
+  <div class="mt-8 flex justify-center gap-4 flex-wrap">
+    <a href="zivvi/login/login.html?type=register" class="btn">Start Free</a>
+    <a href="zivvi/login/login.html" class="glass px-6 py-3">View Demo</a>
+  </div>
+
+</section>
+
+<!-- ================= SOCIAL PROOF ================= -->
+
+<section class="container mt-28 text-center">
+
+  <!-- LABEL -->
+  <p class="text-white/40 text-xs tracking-widest uppercase">
+    Trusted by 10,000+ users worldwide
+  </p>
+
+  <!-- LOGOS -->
+  <div class="flex flex-wrap justify-center items-center gap-8 mt-8 opacity-70">
+
+    <div class="px-4 py-2 glass text-sm font-medium hover:opacity-100 transition">Google</div>
+    <div class="px-4 py-2 glass text-sm font-medium hover:opacity-100 transition">Stripe</div>
+    <div class="px-4 py-2 glass text-sm font-medium hover:opacity-100 transition">Notion</div>
+    <div class="px-4 py-2 glass text-sm font-medium hover:opacity-100 transition">Meta</div>
+
+  </div>
+
+</section>
+
+
+<!-- ================= PREMIUM PREVIEW ================= -->
+
+<section class="container mt-24 grid md:grid-cols-3 gap-6">
+
+  <!-- CARD 1 -->
+  <div class="glass p-6 relative overflow-hidden group">
+
+    <div class="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/10 blur-3xl"></div>
+
+    <p class="text-white/40 text-sm">Total Spent</p>
+
+    <h3 class="text-3xl font-bold mt-2 tracking-tight">
+      ₹12,430
+    </h3>
+
+    <p class="text-green-400 text-xs mt-2">
+      ↑ 12% vs last month
+    </p>
+
+  </div>
+
+
+  <!-- CARD 2 -->
+  <div class="glass p-6 relative overflow-hidden group">
+
+    <div class="absolute -top-10 -right-10 w-32 h-32 bg-purple-500/10 blur-3xl"></div>
+
+    <p class="text-white/40 text-sm">AI Insight</p>
+
+    <h3 class="text-sm mt-3 leading-relaxed text-white/80">
+      You're spending 32% more on food this month. Try reducing dining expenses.
+    </h3>
+
+    <span class="inline-block mt-3 text-xs bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full">
+      Smart Alert
+    </span>
+
+  </div>
+
+
+  <!-- CARD 3 -->
+  <div class="glass p-6 relative overflow-hidden group">
+
+    <div class="absolute -top-10 -right-10 w-32 h-32 bg-pink-500/10 blur-3xl"></div>
+
+    <p class="text-white/40 text-sm">Prediction</p>
+
+    <h3 class="text-3xl font-bold mt-2 tracking-tight">
+      ₹28,000
+    </h3>
+
+    <p class="text-white/50 text-xs mt-2">
+      Expected monthly spend
+    </p>
+
+  </div>
+
+</section>
+
+<!-- ================= FEATURES ================= -->
+
+<section class="container mt-32 text-center">
+
+  <h2 class="text-4xl font-bold mb-12">Why ZIVVI?</h2>
+
+  <div class="grid md:grid-cols-3 gap-6">
+
+    <div class="glass p-8">
+      <h3 class="text-lg font-semibold mb-3">Real-time Tracking</h3>
+      <p class="text-white/60 text-sm">Track expenses instantly with smart categorization.</p>
+    </div>
+
+    <div class="glass p-8">
+      <h3 class="text-lg font-semibold mb-3">AI Insights</h3>
+      <p class="text-white/60 text-sm">Get automated financial advice powered by AI.</p>
+    </div>
+
+    <div class="glass p-8">
+      <h3 class="text-lg font-semibold mb-3">Future Prediction</h3>
+      <p class="text-white/60 text-sm">Forecast spending and plan ahead effectively.</p>
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ================= HOW TO USE ================= -->
+
+<section class="container mt-32 text-center">
+
+  <!-- HEADER -->
+  <h2 class="text-4xl font-bold mb-4">
+    How to Use <span class="gradient-text">ZIVVI</span>
+  </h2>
+
+  <p class="text-white/60 max-w-xl mx-auto mb-12">
+    Start managing your finances in just a few simple steps. No complexity, just smart insights.
+  </p>
+
+  <!-- STEPS -->
+  <div class="grid md:grid-cols-3 gap-6">
+
+    <!-- STEP 1 -->
+    <div class="glass p-8 relative group overflow-hidden">
+
+      <div class="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/10 blur-3xl"></div>
+
+      <div class="text-indigo-400 text-sm font-semibold mb-2">Step 1</div>
+
+      <h3 class="text-lg font-semibold mb-3">
+        Create Your Account
+      </h3>
+
+      <p class="text-white/60 text-sm leading-relaxed">
+        Get started by creating your account in just a few seconds. Set your monthly budget and preferences to begin tracking your expenses in a structured way.
+        <br><br>
+        The registration process is quick and simple — just enter your name, email address, and create a secure password to access your personalized dashboard and start managing your finances instantly.
+      </p>
+
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="glass p-8 relative group overflow-hidden">
+
+      <div class="absolute -top-10 -right-10 w-32 h-32 bg-purple-500/10 blur-3xl"></div>
+
+      <div class="text-purple-400 text-sm font-semibold mb-2">Step 2</div>
+
+      <h3 class="text-lg font-semibold mb-3">
+        Add Your Transactions
+      </h3>
+
+      <p class="text-white/60 text-sm leading-relaxed">
+        Start by adding your daily expenses like food, travel, bills, or shopping. 
+        Simply enter the amount, choose a category, and save it — ZIVVI will automatically organize everything for you.
+        <br><br>
+        You don’t need to worry about managing data manually. Every transaction is tracked in real-time, helping you clearly see where your money is going and how much you are spending every day.
+      </p>
+
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="glass p-8 relative group overflow-hidden">
+
+      <div class="absolute -top-10 -right-10 w-32 h-32 bg-pink-500/10 blur-3xl"></div>
+
+      <div class="text-pink-400 text-sm font-semibold mb-2">Step 3</div>
+
+      <h3 class="text-lg font-semibold mb-3">
+        Get AI Insights
+      </h3>
+
+      <p class="text-white/60 text-sm leading-relaxed">
+        Once your data is added, ZIVVI analyzes your spending patterns using smart AI.
+        It identifies where you're overspending, highlights unusual expenses, and gives helpful suggestions to improve your financial habits.
+        <br><br>
+        You will get clear insights like how much you can save, where to cut costs, and how to stay within your budget — making it easier to take control of your money without any guesswork.
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ================= CTA ================= -->
+
+<section class="container mt-32 mb-20 text-center">
+
+  <div class="glass p-12">
+
+    <h2 class="text-3xl font-bold">
+      Start Managing Money Smarter Today
+    </h2>
+
+    <p class="text-white/60 mt-4">
+      Join thousands of users improving their financial habits.
+    </p>
+
+    <div class="mt-6">
+      <a href="zivvi/login/login.html?type=register" class="btn">Get Started Free</a>
+    </div>
+
+  </div>
+
+</section>
+
+<script>
+function updateDateTime() {
+  const now = new Date();
+
+  // Date
+  const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+  const date = now.toLocaleDateString('en-IN', dateOptions);
+
+  // Time
+  const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+  const time = now.toLocaleTimeString('en-IN', timeOptions);
+
+  document.getElementById("liveDate").textContent = date;
+  document.getElementById("liveTime").textContent = time;
+}
+
+// Initial call
+updateDateTime();
+
+// Update every second
+setInterval(updateDateTime, 1000);
+</script>
+
+</body>
+</html>

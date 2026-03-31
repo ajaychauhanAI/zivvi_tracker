@@ -1,0 +1,382 @@
+:root {
+    --bg-dark: #02040a;
+    --accent: #2c016c;
+    --secondary: #2c016c;
+    --glass: rgba(255, 255, 255, 0.03);
+    --border: rgba(255, 255, 255, 0.1);
+}
+
+/* Base Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+body {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at top right, #1a1025, var(--bg-dark) 60%);
+    color: #fff;
+    overflow: hidden;
+}
+
+/* Ambient Background Glows */
+.glow {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: var(--accent);
+    filter: blur(150px);
+    opacity: 0.15;
+    z-index: -1;
+    border-radius: 50%;
+}
+
+/* Card */
+.card {
+    width: 420px;
+    padding: 50px 40px;
+    background: rgba(10, 10, 15, 0.7);
+    backdrop-filter: blur(25px);
+    border: 1px solid var(--border);
+    border-radius: 35px;
+    box-shadow: 0 50px 100px rgba(0,0,0,0.5);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Logo */
+.logo-ring {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 30px;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.logo-ring::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 22px;
+    background: linear-gradient(45deg, transparent, var(--accent), transparent);
+    z-index: -1;
+    animation: rotate 4s linear infinite;
+}
+
+@keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Heading */
+h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    background: linear-gradient(to right, #fff, #94a3b8);
+    
+    background-clip: text;
+    -webkit-background-clip: text;
+
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    color: #64748b;
+    font-size: 0.95rem;
+    margin-bottom: 40px;
+}
+
+/* Inputs */
+.input-box {
+    position: relative;
+    margin-bottom: 25px;
+}
+
+.input-box input {
+    width: 100%;
+    padding: 18px 25px;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    color: #fff;
+    outline: none;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.input-box input:focus {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: var(--accent);
+    box-shadow: 0 0 20px rgba(251, 44, 90, 0.1);
+}
+
+/* Button */
+.btn-glow {
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--secondary) 100%);
+    border: none;
+    border-radius: 18px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(25, 0, 255, 0.3);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-glow:hover {
+    transform: scale(1.02);
+    box-shadow: 0 15px 40px rgba(25, 0, 255, 0.3);
+    filter: brightness(1.1);
+}
+
+.btn-glow:active {
+    transform: scale(0.98);
+}
+
+/* Footer */
+.footer-link {
+    margin-top: 30px;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.footer-link span {
+    color: var(--accent);
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.footer-link span:hover {
+    filter: brightness(1.3);
+}
+
+.footer-text {
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Forgot Password */
+.forgot-link {
+    display: block;
+    text-align: right;
+    margin: -10px 5px 25px 0;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.forgot-link:hover {
+    color: var(--accent);
+    text-decoration: underline;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(12px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+/* Reset Card */
+.reset-card {
+    width: 380px !important;
+}
+
+.reset-desc {
+    color: var(--text-dim);
+    margin-bottom: 25px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.input-box {
+    position: relative;
+}
+
+.eye {
+    position: absolute;
+    right: 25px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 20px;
+    opacity: 0.7;
+    transition: 0.3s;
+}
+
+.eye:hover {
+    opacity: 1;
+}
+/* =========================
+   TABLET (768px – 1024px)
+========================= */
+@media (max-width:1024px){
+
+.card{
+    width:380px;
+    padding:45px 35px;
+}
+
+h1{
+    font-size:2rem;
+}
+
+.subtitle{
+    font-size:0.9rem;
+}
+
+.input-box input{
+    padding:16px 22px;
+}
+
+.btn-glow{
+    padding:16px;
+}
+
+.glow{
+    width:300px;
+    height:300px;
+}
+
+}
+
+
+/* =========================
+   MOBILE (480px – 768px)
+========================= */
+@media (max-width:768px){
+
+body{
+    padding:20px;
+}
+
+.card{
+    width:100%;
+    max-width:360px;
+    padding:40px 28px;
+    border-radius:28px;
+}
+
+h1{
+    font-size:1.8rem;
+}
+
+.subtitle{
+    font-size:0.88rem;
+    margin-bottom:30px;
+}
+
+.logo-ring{
+    width:60px;
+    height:60px;
+}
+
+.input-box{
+    margin-bottom:20px;
+}
+
+.input-box input{
+    padding:15px 20px;
+    font-size:0.95rem;
+}
+
+.btn-glow{
+    padding:15px;
+    font-size:1rem;
+}
+
+.footer-link{
+    font-size:0.85rem;
+}
+
+.glow{
+    width:250px;
+    height:250px;
+}
+
+.reset-card{
+    width:100%;
+    max-width:330px;
+}
+
+}
+
+
+/* =========================
+   SMALL MOBILE (<480px)
+========================= */
+@media (max-width:480px){
+
+.card{
+    padding:35px 22px;
+}
+
+h1{
+    font-size:1.6rem;
+}
+
+.subtitle{
+    font-size:0.82rem;
+}
+
+.logo-ring{
+    width:55px;
+    height:55px;
+}
+
+.input-box input{
+    padding:14px 18px;
+}
+
+.btn-glow{
+    padding:14px;
+}
+
+.glow{
+    display:none; /* better performance on small phones */
+}
+
+}

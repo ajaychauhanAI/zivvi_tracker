@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ZIVVI</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<script src="http://localhost:5000/socket.io/socket.io.js"></script>
+    
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="zivvi_style.css">
+
+</head>
+<body class="flex h-screen">
+
+<aside class="w-80 border-r border-white/5 bg-black/40 backdrop-blur-md p-8 flex flex-col">
+
+    <!-- 🚀 LOGO -->
+    <div class="flex items-center gap-4 mb-12">
+        <div class="w-12 h-12 btn-elite rounded-2xl flex items-center justify-center shadow-2xl rotate-6">
+            <i data-lucide="zap" class="text-white"></i>
+        </div>
+        <h1 class="text-2xl font-black tracking-tighter italic">
+            ZIVVI<span class="text-indigo-500">.pro</span>
+        </h1>
+    </div>
+
+    <!-- 📌 NAV -->
+    <nav class="space-y-3 flex-1">
+
+        <a href="javascript:void(0)" onclick="showPage('dashboard', this)"
+           class="nav-link active flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 font-bold text-sm">
+            <i data-lucide="layout-grid" class="w-5 h-5"></i>
+            Dashboard
+        </a>
+
+        <a href="javascript:void(0)" onclick="showPage('analytics', this)"
+           class="nav-link flex items-center gap-4 px-5 py-4 rounded-2xl text-white/30 hover:text-white/80 hover:bg-white/5 transition-all duration-300 font-bold text-sm">
+            <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+            Analytics
+        </a>
+
+        <a href="javascript:void(0)" onclick="showPage('settings', this)"
+           class="nav-link flex items-center gap-4 px-5 py-4 rounded-2xl text-white/30 hover:text-white/80 hover:bg-white/5 transition-all duration-300 font-bold text-sm">
+            <i data-lucide="settings" class="w-5 h-5"></i>
+            Settings
+        </a>
+
+    </nav>
+
+    <!-- 👤 PROFILE CARD -->
+    <div class="mt-auto">
+
+        <div class="relative p-[1px] rounded-[2rem] bg-gradient-to-br from-indigo-500/30 to-transparent">
+
+            <div class="bg-[#0b0b0f]/90 backdrop-blur-2xl rounded-[2rem] p-6 border border-white/5">
+
+                <!-- 🔥 GLOW -->
+                <div class="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/10 blur-3xl rounded-full"></div>
+
+                <!-- 👤 USER -->
+                <div class="flex items-center gap-4">
+
+                    <!-- AVATAR -->
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-900/40 overflow-hidden relative">
+                        <img id="user-avatar" src="" class="w-12 h-12 object-cover">
+                        <div id="avatar-shimmer" class="absolute inset-0 shimmer opacity-20"></div>
+                    </div>
+
+                    <!-- USER INFO -->
+                    <div class="flex-1 overflow-hidden">
+                        <p id="user-name" class="text-sm font-black truncate">
+                            Loading...
+                        </p>
+
+                        <!-- 🔥 EMAIL -->
+                        <p id="user-email" class="text-[11px] text-white/40 truncate">
+                            user@email.com
+                        </p>
+
+                        <!-- 🔥 TIER -->
+                        <p id="user-tier" class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">
+                            PRO MEMBER
+                        </p>
+                    </div>
+
+                    <!-- 🟢 STATUS -->
+                    <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+
+                </div>
+
+                <!-- DIVIDER -->
+                <div class="my-5 h-[1px] bg-white/5"></div>
+
+                <!-- LOGOUT -->
+                <button onclick="logoutUser()"
+                    class="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-xs font-black uppercase tracking-widest
+                           bg-gradient-to-r from-red-500/10 to-red-500/5
+                           border border-red-500/20 text-red-400
+                           hover:from-red-500/20 hover:to-red-500/10
+                           hover:border-red-400/40 hover:scale-[1.02]
+                           transition-all duration-300">
+
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    Logout
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</aside>
+
+<div class="md:hidden flex justify-between items-center px-4 py-4 border-b border-white/10">
+
+  <!-- MENU BTN -->
+  <button onclick="toggleSidebar()" class="text-white">
+    ☰
+  </button>
+
+  <!-- TITLE -->
+  <h1 class="font-bold text-lg">
+    ZIVVI<span class="text-indigo-400">.pro</span>
+  </h1>
+
+  <!-- PROFILE DOT -->
+  <div class="w-8 h-8 rounded-full bg-indigo-500/20"></div>
+
+</div>
+
+<div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
+
+    <main class="flex-1 p-12 overflow-y-auto overflow-x-hidden">
+        
+        <div id="page-dashboard" class="space-y-10 animate-in fade-in duration-700">
+
+           <header class="flex justify-between items-end mb-12">
+
+                <!-- 🔹 LEFT SIDE (Greeting + Title) -->
+                <div>
+                    <!-- 👋 Greeting -->
+                    <h3 id="greetingText" class="text-3xl font-extrabold tracking-tighter"></h3>
+        
+                    <!-- 📡 Subtitle -->
+                    <p id="todaySpendText" class="text-white/40 font-medium font-bold italic mt-1">
+                       You spent ₹0 today 💸
+                    </p>
+                </div>
+
+                <!-- 🔹 RIGHT SIDE (System Status) -->
+<div class="flex items-center justify-between px-6 py-4 rounded-full 
+            border border-white/10 bg-gradient-to-r from-white/[0.05] to-white/[0.02] 
+            backdrop-blur-2xl shadow-[0_0_40px_rgba(99,102,241,0.08)]">
+
+    <!-- 🔹 LEFT: SYSTEM STATUS -->
+    <div class="flex items-center gap-3">
+
+        <!-- 🔥 LIVE DOT -->
+        <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+        </span>
+
+        <!-- TEXT -->
+        <span class="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400/90">
+            System Operational
+        </span>
+    </div>
+
+    <!-- 🔹 RIGHT: CONTROLS -->
+    <div class="flex items-center gap-3">
+
+        <!-- 🕒 TIME CARD (ULTRA PRO) -->
+        <div class="relative group flex items-center gap-3 px-4 py-2 rounded-2xl 
+                    bg-gradient-to-br from-white/[0.06] to-white/[0.02]
+                    border border-white/10
+                    hover:border-indigo-400/30
+                    transition-all duration-300 overflow-hidden">
+
+            <!-- 🔥 INNER GLOW -->
+            <div class="absolute inset-0 bg-indigo-500/10 blur-2xl opacity-0 group-hover:opacity-100 transition"></div>
+
+            <!-- ICON -->
+            <div class="w-9 h-9 rounded-xl bg-indigo-500/10 flex items-center justify-center relative z-10">
+                <i data-lucide="clock" class="w-4 h-4 text-indigo-400"></i>
+            </div>
+
+            <!-- TEXT -->
+            <div class="leading-tight text-right relative z-10">
+
+                <p id="liveTime"
+                   class="text-sm font-black text-white tracking-tight">
+                    --:--
+                </p>
+
+                <p id="liveDate"
+                   class="text-[10px] text-white/40 uppercase tracking-widest">
+                    Loading...
+                </p>
+
+            </div>
+        </div>
+
+        <!-- 📊 FILTER (GLASS BUTTON STYLE) -->
+        <div class="relative group">
+
+            <select id="dateFilter"
+                class="appearance-none pl-5 pr-12 py-2.5 rounded-xl text-sm font-semibold
+                       bg-white/[0.05] border border-white/10
+                       group-hover:border-indigo-400/40
+                       focus:ring-2 focus:ring-indigo-500/30
+                       transition-all duration-300
+                       outline-none text-white backdrop-blur-lg">
+
+                <option value="all">All Time</option>
+                <option value="today">Today</option>
+                <option value="yesterday">Yesterday</option>
+                <option value="this_month">This Month</option>
+                <option value="last_month">Last Month</option>
+                <option value="6_months">Last 6 Months</option>
+                <option value="this_year">This Year</option>
+                <option value="last_year">Last Year</option>
+            </select>
+
+            <!-- ICON -->
+            <div class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-white/40 text-xs">
+                ▼
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+            </header>
+
+            <div class="grid grid-cols-12 gap-8">
+                <div class="col-span-8 space-y-8">
+                    <div class="grid grid-cols-2 gap-8">
+
+<div class="glass-card p-10 h-[380px] flex flex-col justify-between relative overflow-hidden group">
+
+    <!-- 🔥 PREMIUM GLOW -->
+    <div class="absolute -right-16 -top-16 w-60 h-60 bg-indigo-500/10 rounded-full blur-[40px] opacity-60 group-hover:opacity-80 transition-all duration-700"></div>
+
+    <!-- 💰 BALANCE -->
+    <div>
+        <p class="text-white/20 text-[11px] font-bold uppercase tracking-[0.2em]">
+            Available Balance
+        </p>
+
+        <h1 id="availableBalance"
+            class="text-5xl font-black mt-3 tracking-tight text-white leading-none">
+            ₹0
+        </h1>
+
+        <div class="flex items-center gap-2 mt-3">
+            <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+            <p class="text-[11px] text-emerald-400 font-semibold">
+                Safe to spend
+            </p>
+        </div>
+    </div>
+
+    <!-- 📊 SMART BOXES -->
+    <div id="moneyBoxes" class="flex gap-2 mt-6 items-stretch">
+
+        <div id="spentBox" class="flex-1 transition-all duration-500">
+            <div class="h-full rounded-2xl p-4 bg-red-500/5 border border-red-500/20 hover:border-red-400/40">
+                <p class="text-[10px] text-white/30 uppercase font-bold">Spent</p>
+                <h3 id="totalSpent" class="text-1xl font-black text-red-400 mt-2">₹0</h3>
+            </div>
+        </div>
+
+        <div id="limitBox" class="flex-1 transition-all duration-500">
+            <div class="h-full rounded-2xl p-4 bg-indigo-500/5 border border-indigo-500/20 hover:border-indigo-400/40">
+                <p class="text-[10px] text-white/30 uppercase font-bold">Limit</p>
+                <h3 id="monthlyLimit" class="text-1xl font-black text-indigo-400 mt-2">₹0</h3>
+            </div>
+        </div>
+
+        <div id="leftBox" class="flex-1 transition-all duration-500">
+            <div class="h-full rounded-2xl p-4 bg-emerald-500/5 border border-emerald-500/20 hover:border-emerald-400/40">
+                <p class="text-[10px] text-white/30 uppercase font-bold">Left</p>
+                <h3 id="remainingAmount" class="text-1xl font-black text-emerald-400 mt-2">₹0</h3>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 📈 BAR -->
+    <div class="mt-7 space-y-2">
+        <div class="flex justify-between text-[10px] font-bold text-white/30 uppercase">
+            <span>Usage</span>
+            <span id="usagePercent" class="text-indigo-400">0%</span>
+        </div>
+
+        <div class="relative w-full h-3 bg-white/5 rounded-full overflow-hidden">
+            <div class="absolute inset-0 blur-md bg-indigo-500/20"></div>
+            <div id="usageBar"
+                 class="relative h-full rounded-full transition-all duration-1000 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"
+                 style="width:0%">
+            </div>
+        </div>
+    </div>
+
+</div>
+
+                        <div class="glass-card p-10">
+                            <h4 class="text-[10px] font-bold text-white/30 uppercase mb-8 tracking-widest italic flex items-center gap-2">
+                                <i data-lucide="plus-circle" class="w-4 h-4 text-indigo-500"></i> New Log Entry
+                            </h4>
+                            <div class="space-y-4">
+                                <input type="text" id="name" placeholder="Item Name" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-indigo-500 font-bold text-sm">
+
+                                <div class="flex gap-4">
+
+                                    <div id="catWrapper" class="flex-1 relative">
+
+                                        <!-- Dropdown -->
+                                        <select id="cat" class="w-full bg-[#0b0b0f] border border-white/10 p-4 rounded-2xl"> </select>
+
+                                        <!-- Input Box -->
+                                        <div id="catInputBox" class="hidden relative">
+                                        <input type="text" id="newCatInput" placeholder="Enter category" class="w-full bg-[#0b0b0f] border border-white/10 p-4 pr-10 rounded-2xl outline-none font-bold text-sm">
+
+                                        <!-- ✕ Button -->
+                                        <span id="cancelCat"
+                                        class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-white/40 hover:text-white text-lg">
+                                        ✕
+                                    </span>
+                                </div>
+                            </div>
+
+                            <input type="number" id="amt" placeholder="Amount" class="w-32 bg-white/5 border border-white/10 p-4 rounded-2xl outline-none font-bold text-center">
+                        </div>
+
+                        <!-- 🔥 NEW FIELDS -->
+                        <div class="grid grid-cols-5 gap-4">
+                            <!-- UPI (2 parts) -->
+                            <select id="payment" class="col-span-2 w-full bg-[#0b0b0f] border border-white/10 px-4 py-4 pr-10 rounded-2xl text-sm font-semibold outline-none appearance-none">
+
+                               <option value="" selected disabled>Select</option>
+                               <option value="UPI">UPI</option>
+                               <option value="Card">Card</option>
+                               <option value="Cash">Cash</option>
+                        </select>
+
+
+                        <!-- Bank (3 parts) -->
+                        <input type="text" id="bank" placeholder="Bank Name" class="col-span-3 w-full bg-white/5 border border-white/10 px-4 py-4 rounded-2xl outline-none text-sm font-semibold">
+                    </div>
+
+                    <button onclick="save()" id="saveBtn" class="w-full btn-elite p-5 rounded-2xl font-black uppercase text-xs tracking-widest">Add Expense </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card overflow-hidden min-h-[400px]">
+            <div class="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
+                <h4 class="font-bold text-sm italic text-white/40 tracking-widest uppercase">Encrypted History</h4>
+            </div>
+
+            <div class="px-6">
+                <select id="filterMethod" class="p-3 bg-[#0b0b0f] border border-white/10 rounded-xl mb-4 text-sm font-semibold text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="">All</option>
+                    <option value="UPI">UPI</option>
+                    <option value="Card">Card</option>
+                    <option value="Cash">Cash</option>
+                </select>
+
+            </div>
+
+            <div id="ledgerBody" class="px-6 py-4 space-y-4">
+                <div class="shimmer h-16 w-full opacity-10 rounded-2xl"></div>
+                <div class="shimmer h-16 w-full opacity-10 rounded-2xl"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-span-12 lg:col-span-4 glass-card p-8 flex flex-col items-center justify-between min-h-[650px]">
+        <!-- 🔹 HEADER -->
+        <div class="w-full text-center">
+            <h4 class="text-[10px] font-black text-white/20 uppercase mb-2 tracking-[0.4em] italic">
+                Intelligence Hub
+            </h4>
+            <h3 class="text-xl font-extrabold tracking-tight text-white/90">
+                Asset Allocation
+            </h3>
+            <!-- 🔥 AI STATUS -->
+            <div class="flex items-center justify-center gap-2 mt-2">
+                <span class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
+                <span class="text-[8px] text-indigo-400 uppercase tracking-widest font-black">
+                    AI Engine Active
+                </span>
+            </div>
+        </div>
+        <!-- 🔹 PIE CHART -->
+        <div class="relative w-full aspect-square flex items-center justify-center">
+            <div class="absolute w-48 h-48 bg-indigo-500/5 rounded-full blur-[80px] group-hover:bg-indigo-500/10 transition-all duration-1000"></div>
+            <canvas id="pieChart"></canvas>
+            <!-- 🔹 CENTER INFO -->
+            <div class="absolute text-center">
+                <p class="text-[10px] font-bold text-white/10 uppercase tracking-[0.2em] mb-1">
+                    Cumulative
+                </p>
+                <p class="text-4xl font-black tracking-tighter text-white" id="pieTotal">
+                    ₹0
+                </p>
+                <div class="mt-2 flex items-center justify-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-[8px] font-black text-emerald-500/60 uppercase tracking-widest">
+                        Active Sync
+                    </span>
+                </div>
+                <!-- 🔥 FINANCIAL SCORE -->
+                <div class="mt-4">
+                    <p class="text-[8px] text-white/20 uppercase tracking-widest">Health Score</p>
+                    <p id="financeScore" class="text-2xl font-black text-emerald-400">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🔹 CATEGORY CLUSTERS -->
+        <div class="w-full space-y-4 pt-8 border-t border-white/5">
+            <p class="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] mb-6">
+                Category Clusters
+            </p>
+
+            <div id="legendBox" class="space-y-3">
+                <div class="h-12 w-full shimmer opacity-10 rounded-2xl"></div>
+                <div class="h-12 w-full shimmer opacity-5 rounded-2xl"></div>
+            </div>
+        </div>
+
+        <!-- 🔹 SMART INSIGHT -->
+        <div class="w-full mt-10">
+            <!-- ⚠️ TREND ALERT -->
+            <div id="trendAlert" class="text-[10px] text-yellow-400 font-bold text-center mb-4 hidden">
+                ⚠️ Spending spike detected
+            </div>
+            <div class="p-6 bg-indigo-500/5 rounded-[2rem] border border-indigo-500/10 relative group hover:border-indigo-500/30 transition-all">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-8 h-8 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400">
+                        <i data-lucide="brain-circuit" class="w-4 h-4"></i>
+                    </div>
+                    <span class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">
+                        Smart Insight
+                    </span>
+                </div>
+
+                <p id="smartInsightText" class="text-[12px] font-medium text-white/60 leading-relaxed">
+                    AI is analyzing your spending behavior...
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+
+
+<div id="page-analytics" class="hidden space-y-8 animate-in fade-in zoom-in duration-700">
+    <header class="flex flex-col md:flex-row justify-between items-center gap-6 mb-10">
+        <div class="text-center md:text-left">
+            <h2 class="text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
+                Deep Analytics
+            </h2>
+            <p class="text-white/20 font-bold uppercase tracking-[0.3em] text-[10px] mt-2 italic">
+                Neural Pattern Recognition & Velocity Tracking
+            </p>
+        </div>
+        <div class="flex gap-4">
+            <div class="glass-card px-6 py-3 border-white/10 flex items-center gap-3 bg-indigo-500/5">
+                <i data-lucide="brain-circuit" class="w-4 h-4 text-purple-500"></i>
+                <span class="text-[10px] font-black uppercase text-white/40 tracking-widest">AI Engine Active</span>
+            </div>
+        </div>
+    </header>
+    <div class="grid grid-cols-12 gap-6">
+        <!-- ============================= -->
+        <!-- 🔥 TOP CARDS (FULL WIDTH) -->
+        <!-- ============================= -->
+        <div class="col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- AVG DAILY BURN -->
+            <div class="group relative p-[1px] rounded-[2rem] bg-gradient-to-br from-indigo-500/30 to-transparent">
+                <div class="bg-[#060608]/90 backdrop-blur-2xl rounded-[2rem] p-8 h-full border border-white/5 hover:border-indigo-500/30 transition">
+                    <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3">
+                        Avg. Daily Burn
+                    </p>
+                    <h3 id="avgDaily" class="text-4xl font-black tracking-tight text-white">
+                        ₹0
+                    </h3>
+                    <div class="flex items-center gap-2 mt-4">
+                        <span id="burnStatusDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span id="burnStatusText" class="text-[10px] font-bold uppercase tracking-widest text-emerald-400">
+                            Stable
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PEAK OUTFLOW -->
+            <div class="group relative p-[1px] rounded-[2rem] bg-gradient-to-br from-purple-500/30 to-transparent">
+                <div class="bg-[#060608]/90 backdrop-blur-2xl rounded-[2rem] p-8 h-full border border-white/5 hover:border-purple-500/30 transition">
+                    <p class="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-3">
+                        Peak Outflow
+                    </p>
+                    <h3 id="peakSpend" class="text-4xl font-black tracking-tight text-white">
+                        ₹0
+                    </h3>
+                    <p class="text-[10px] text-white/20 mt-4 uppercase tracking-widest italic">
+                        Highest single transaction
+                    </p>
+                </div>
+            </div>
+
+            <!-- SAVINGS MOMENTUM -->
+            <div class="group relative p-[1px] rounded-[2rem] bg-gradient-to-br from-emerald-500/30 to-transparent">
+                <div class="bg-[#060608]/90 backdrop-blur-2xl rounded-[2rem] p-8 h-full border border-white/5 hover:border-emerald-500/30 transition">
+                    <p class="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-3">
+                        Savings Momentum
+                    </p>
+                    <h3 id="spendingHealth" class="text-4xl font-black tracking-tight text-white">
+                        Optimal
+                    </h3>
+
+                    <div class="mt-6 w-full h-2 bg-white/5 rounded-full overflow-hidden relative">
+                        <div class="absolute inset-0 blur-md bg-emerald-500/40"></div>
+                        <div id="healthBar"
+                        class="relative h-full w-0 bg-gradient-to-r from-emerald-400 to-green-500 rounded-full transition-all duration-1000">
+                    </div>
+                </div>
+
+                <p id="healthHint" class="text-[10px] text-white/30 mt-3 italic">
+                    You're managing expenses well
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================= -->
+    <!-- 📈 TREND CHART -->
+    <!-- ============================= -->
+    <div class="col-span-12 lg:col-span-8 glass-card p-10 relative group min-h-[500px]">
+        <div class="flex justify-between items-center mb-10">
+            <h4 class="text-xs font-black text-white/30 uppercase tracking-widest flex items-center gap-3 italic">
+                <i data-lucide="trending-up" class="w-4 h-4 text-indigo-500"></i>
+                Spending Velocity Momentum
+            </h4>
+
+            <div class="flex gap-2">
+                <div class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
+                <span class="text-[9px] font-black text-white/40 uppercase tracking-widest">
+                    Real-time Feed
+                </span>
+            </div>
+        </div>
+
+
+        <!-- 🔥 IMPORTANT FIX -->
+        <div class="h-[350px]">
+            <canvas id="trendChart"></canvas>
+        </div>
+    </div>
+
+    <!-- ============================= -->
+    <!-- 📊 CATEGORY INTENSITY -->
+    <!-- ============================= -->
+    <div class="col-span-12 lg:col-span-4 glass-card p-10">
+
+        <h4 class="text-xs font-black text-white/30 uppercase tracking-widest mb-10 flex items-center gap-3 italic">
+            <i data-lucide="bar-chart-horizontal" class="w-4 h-4 text-purple-500"></i>
+            Category Intensity
+        </h4>
+
+        <div id="categoryIntensity" class="space-y-6">
+            <div class="h-4 w-full bg-white/5 rounded-full animate-pulse"></div>
+        </div>
+
+    </div>
+
+</div>
+
+<div class="glass-card p-8 relative overflow-visible">
+
+    <!-- 🔥 Glow -->
+    <div class="absolute -top-20 -right-20 w-72 h-72 bg-indigo-500/10 blur-[100px]"></div>
+
+    <!-- HEADER -->
+    <div class="flex justify-between items-center mb-6">
+        <h3 class="text-sm font-black uppercase tracking-widest text-white/30">
+            Spending Heatmap
+        </h3>
+        <span class="text-[10px] text-white/20 font-bold">
+            Monthly Activity
+        </span>
+    </div>
+
+    <!-- WEEK LABEL -->
+    <div class="grid grid-cols-7 text-[9px] text-white/20 font-bold mb-2">
+        <span>Mon</span><span>Tue</span><span>Wed</span>
+        <span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+    </div>
+
+    <!-- 🔥 WRAPPER (VERY IMPORTANT) -->
+    <div id="heatmapWrapper" class="relative">
+
+        <!-- GRID -->
+        <div id="heatmapGrid"
+             class="grid grid-cols-7 gap-2"></div>
+
+        <!-- 🔥 TOOLTIP (FIXED BUG VERSION) -->
+        <div id="heatmapTooltip"
+             class="hidden absolute z-50 p-4 rounded-2xl 
+                    bg-black/90 text-xs backdrop-blur-xl 
+                    border border-white/10 shadow-2xl min-w-[180px]">
+        </div>
+
+    </div>    
+
+</div>
+
+<!-- 🔥 WRAPPER GRID (IMPORTANT) -->
+<div class="grid grid-cols-12 gap-6 items-start">
+
+    <!-- 🔹 LEFT: SMART HELPER -->
+    <div class="col-span-12 lg:col-span-6 relative overflow-hidden rounded-[2.5rem] p-[1px] 
+                bg-gradient-to-br from-indigo-500/30 via-purple-500/20 to-transparent
+                h-fit max-h-[420px]">
+
+        <div class="bg-[#060608]/90 backdrop-blur-md rounded-[2.5rem] p-8 
+                    flex flex-col gap-6 h-full border border-white/5 overflow-hidden">
+
+            <!-- HEADER -->
+<div class="glass-card p-8 space-y-6 relative overflow-hidden">
+
+    <!-- 🔥 GLOW -->
+    <div class="absolute -top-10 -right-10 w-40 h-40 bg-indigo-500/10 blur-3xl rounded-full"></div>
+
+    <!-- HEADER -->
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
+                <i data-lucide="brain" class="w-5 h-5 text-indigo-400"></i>
+            </div>
+
+            <div>
+                <h3 class="font-extrabold text-sm">AI Finance Coach</h3>
+                <p class="text-xs text-white/40">Smart Insights</p>
+            </div>
+        </div>
+
+        <span class="text-xs font-bold text-emerald-400 flex items-center gap-1">
+            ● Active
+        </span>
+    </div>
+
+    <!-- 🔥 MAIN INSIGHT -->
+    <div id="aiInsight" class="text-sm font-semibold text-white/70 leading-relaxed">
+        Loading insights...
+    </div>
+
+    <!-- 🔥 WARNING -->
+    <div id="aiWarning"
+        class="p-4 rounded-xl text-xs font-semibold hidden">
+    </div>
+
+    <!-- 🔥 TIPS -->
+    <div id="aiTips" class="space-y-2 text-xs text-white/50"></div>
+
+    <!-- 🔥 PROGRESS -->
+    <div class="space-y-2">
+        <div class="flex justify-between text-[10px] font-bold text-white/30 uppercase">
+            <span>Budget Risk</span>
+            <span id="riskLabel" class="text-emerald-400">Safe</span>
+        </div>
+
+        <div class="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+            <div id="riskBar"
+                class="h-full transition-all duration-700 bg-emerald-400"
+                style="width:0%">
+            </div>
+        </div>
+    </div>
+
+</div>
+
+            <!-- MESSAGE -->
+            <p id="coachText" class="text-sm text-white/80 leading-relaxed">
+                👍 You are using your money wisely. Keep it up!
+            </p>
+
+            <div class="h-[1px] bg-white/10"></div>
+
+        </div>
+    </div>
+
+    <!-- 🔹 RIGHT: PAYMENT ANALYTICS -->
+    <div class="col-span-12 lg:col-span-6 glass-card p-8 
+                h-fit max-h-[420px] overflow-hidden flex flex-col gap-4">
+
+        <h4 class="text-xs font-bold text-white/30 uppercase">
+            Payment Analytics
+        </h4>
+
+        <div id="bankStats" class="text-xs space-y-3 overflow-y-auto max-h-[120px]"></div>
+
+    </div>
+
+</div>
+</div>
+
+<div id="page-settings" class="hidden space-y-10 animate-in fade-in zoom-in duration-700">
+
+<!-- ================= HEADER ================= -->
+<header class="flex flex-col md:flex-row justify-between items-center gap-6 mb-12">
+
+    <div>
+        <h2 class="text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-500">
+            System Settings
+        </h2>
+        <p class="text-white/20 font-bold uppercase tracking-[0.3em] text-[10px] mt-2 italic">
+            Configuration & Cloud Security Management
+        </p>
+    </div>
+
+    <div class="flex items-center gap-3 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl">
+        <i data-lucide="shield-check" class="w-4 h-4 text-emerald-500"></i>
+        <span class="text-[10px] font-black uppercase tracking-widest text-white/40">
+            SECURE SYSTEM ACTIVE
+        </span>
+    </div>
+
+    
+</header>
+
+
+<div class="grid grid-cols-12 gap-8">
+
+<!-- ================= LEFT ================= -->
+<div class="col-span-12 lg:col-span-4 space-y-8">
+
+<!-- 🔐 SESSION SECURITY CARD (ULTRA PRO) -->
+<div class="glass-card p-7 mt-6 relative overflow-hidden group">
+
+    <!-- 🔥 DUAL GLOW -->
+    <div class="absolute -top-16 -right-16 w-60 h-60 bg-emerald-500/10 blur-[60px] rounded-full opacity-70 group-hover:opacity-100 transition-all duration-700"></div>
+    <div class="absolute -bottom-16 -left-16 w-60 h-60 bg-indigo-500/10 blur-[60px] rounded-full opacity-50 group-hover:opacity-80 transition-all duration-700"></div>
+
+    <!-- 🔹 HEADER -->
+    <div class="flex items-center justify-between mb-5">
+
+        <div>
+            <h4 class="text-[10px] font-black uppercase tracking-[0.3em] text-white/30">
+                Session Security
+            </h4>
+
+            <!-- 🔥 MICRO TEXT -->
+            <p class="text-[11px] text-white/30 mt-1">
+                Secure session active
+            </p>
+        </div>
+
+        <!-- 🟢 STATUS BADGE -->
+        <span id="sessionStatus"
+            class="flex items-center gap-1 text-[10px] font-bold px-3 py-1 rounded-full
+                   bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+
+            <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
+            ACTIVE
+        </span>
+    </div>
+
+    <!-- 🔹 MAIN CONTENT -->
+    <div class="flex items-center justify-between">
+
+        <!-- ⏱ TIMER BLOCK -->
+        <div>
+
+            <!-- LABEL -->
+            <p class="text-[10px] text-white/30 uppercase tracking-widest">
+                Remaining Time
+            </p>
+
+            <!-- TIMER -->
+            <h3 id="sessionTimer"
+                class="text-3xl font-black tracking-tight text-white mt-1 leading-none">
+                --:--
+            </h3>
+
+            <!-- 🔐 SUBTEXT -->
+            <p class="text-[11px] text-white/30 mt-2">
+                Auto-expiring for security
+            </p>
+        </div>
+
+        <!-- 🔐 ICON BLOCK -->
+        <div class="relative">
+
+            <div class="w-14 h-14 rounded-2xl bg-indigo-900/40 flex items-center justify-center shadow-inner">
+                <i data-lucide="shield-check" class="w-7 h-7 text-indigo-400"></i>
+            </div>
+
+            <!-- 🔥 PULSE RING -->
+            <div class="absolute inset-0 rounded-2xl border border-indigo-400/20 animate-ping"></div>
+
+        </div>
+
+    </div>
+
+    <!-- 🔥 PROGRESS BAR -->
+    <div class="mt-6">
+
+        <div class="flex justify-between text-[9px] uppercase tracking-widest text-white/30 mb-2">
+            <span>Session Health</span>
+            <span id="sessionPercent">100%</span>
+        </div>
+
+        <div class="relative w-full h-2 bg-white/5 rounded-full overflow-hidden">
+
+            <!-- glow -->
+            <div class="absolute inset-0 blur-md bg-indigo-500/20"></div>
+
+            <!-- progress -->
+            <div id="sessionProgress"
+                class="relative h-full rounded-full transition-all duration-1000
+                       bg-gradient-to-r from-emerald-500 via-indigo-500 to-purple-500"
+                style="width:100%">
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ⚠️ WARNING -->
+    <div id="sessionWarning"
+        class="mt-4 hidden flex items-center gap-2 text-[11px] text-yellow-400 bg-yellow-500/5 border border-yellow-500/20 px-3 py-2 rounded-xl">
+
+        <span class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span>
+        Session expiring soon — please save your work
+    </div>
+
+</div>
+
+    <!-- ================= THEME ================= -->
+    <div class="glass-card p-8">
+       <h4 class="text-xs font-bold text-white/30 uppercase mb-4 tracking-widest">
+          Appearance
+       </h4>
+
+       <select id="themeSelect"
+          class="w-full bg-[#0b0b0f] border border-white/10 p-3 rounded-xl outline-none font-semibold text-sm focus:border-indigo-500">
+          <option value="dark">🌙 Dark Mode</option>
+          <option value="light">☀️ Light Mode</option>
+          <option value="system">💻 System</option>
+        </select>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="glass-card p-10 text-center relative overflow-hidden">
+        <div class="absolute -top-16 -right-16 w-60 h-60 bg-indigo-500/10 blur-[120px] rounded-full"></div>
+
+        <div class="w-28 h-28 mx-auto mb-6">
+            <img id="set-avatar" class="rounded-[2rem] w-full h-full">
+        </div>
+
+        <h3 id="set-name" class="text-2xl font-black"></h3>
+        <p id="set-tier" class="text-indigo-400 text-xs font-bold uppercase"></p>
+
+        <div class="grid grid-cols-2 gap-4 mt-8">
+            <div class="p-4 bg-white/[0.02] rounded-xl">
+                <p class="text-[10px] text-white/30">Status</p>
+                <h3 id="set-status" class="text-emerald-400 font-black"></h3>
+            </div>
+            <div class="p-4 bg-white/[0.02] rounded-xl">
+                <p class="text-[10px] text-white/30">Plan</p>
+                <h3 id="set-plan" class="text-indigo-400 font-black"></h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= AI SETTINGS ================= -->
+<div class="glass-card p-10 space-y-6">
+
+    <!-- 🔹 HEADER -->
+    <h4 class="text-xs font-black text-white/30 uppercase tracking-widest flex items-center gap-2">
+        <i data-lucide="brain-circuit" class="w-4 h-4 text-indigo-400"></i>
+        AI Settings
+    </h4>
+
+    <!-- 🔹 TOGGLE ROW -->
+    <div class="flex justify-between items-center">
+
+        <!-- TEXT -->
+        <div class="flex flex-col">
+            <span class="text-sm font-semibold text-white/80">
+                Smart Insights
+            </span>
+            <span class="text-[10px] text-white/40">
+                Enable AI-based spending analysis
+            </span>
+        </div>
+
+        <!-- 🔥 PREMIUM SWITCH -->
+        <label class="relative inline-flex items-center cursor-pointer">
+
+            <input type="checkbox" id="smartToggle" class="sr-only peer">
+
+            <!-- TRACK -->
+            <div class="w-11 h-6 bg-white/10 rounded-full peer 
+                        peer-checked:bg-indigo-500 
+                        transition-all duration-300 shadow-inner">
+            </div>
+
+            <!-- KNOB -->
+            <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full 
+                        transition-all duration-300 
+                        peer-checked:translate-x-5">
+            </div>
+
+        </label>
+    </div>
+
+</div>
+
+        <!-- DANGER -->
+<!-- 🚨 DANGER ZONE (PRO VERSION) -->
+<div class="glass-card p-10 border border-red-500/20 relative overflow-hidden group">
+
+    <!-- 🔥 GLOW EFFECT -->
+    <div class="absolute -top-16 -right-16 w-56 h-56 bg-red-500/10 blur-[50px] rounded-full opacity-60 group-hover:opacity-80 transition-all duration-700"></div>
+
+    <!-- HEADER -->
+    <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
+            <i data-lucide="alert-triangle" class="w-5 h-5 text-red-400"></i>
+        </div>
+
+        <div>
+            <h4 class="text-red-400 font-extrabold text-lg">Danger Zone</h4>
+            <p class="text-[11px] text-white/40">Irreversible actions ahead</p>
+        </div>
+    </div>
+
+    <!-- DESCRIPTION -->
+    <p class="text-xs text-white/50 mb-6 leading-relaxed">
+        This will permanently delete all your data including transactions, analytics, and settings.
+        This action <span class="text-red-400 font-bold">cannot be undone</span>.
+    </p>
+
+    <!-- ACTION BUTTON -->
+    <button onclick="openModal()"
+        class="w-full p-4 rounded-2xl font-black text-xs uppercase tracking-widest
+               bg-gradient-to-r from-red-500/20 to-red-500/10
+               border border-red-500/30 text-red-400
+               hover:from-red-500/30 hover:to-red-500/20
+               hover:border-red-400 hover:scale-[1.02]
+               transition-all duration-300">
+
+        ⚠️ Full Data Reset
+
+    </button>
+
+</div>
+
+        <!-- SYSTEM -->
+        <div class="glass-card p-10">
+            <h4 class="text-white/30 mb-4">Core Engine</h4>
+            <p id="instance-text">--</p>
+        </div>
+
+</div>
+
+
+<!-- ================= RIGHT ================= -->
+<div class="col-span-12 lg:col-span-8 space-y-8">
+
+    <!-- BUDGET -->
+    <div class="glass-card p-10">
+        <h4 class="text-xs font-bold text-white/30 uppercase mb-6">Capital Architecture</h4>
+
+        <div class="flex gap-4">
+            <input id="newLimit" class="flex-1 bg-white/5 p-5 rounded-xl" placeholder="Enter Budget">
+            <button onclick="updateLimit()" class="btn-elite px-6 py-4 rounded-xl">
+                Set Limit ⚡
+            </button>
+        </div>
+    </div>
+
+    <!-- SECURITY -->
+    <div class="glass-card p-10">
+        <h4 class="text-xs font-bold text-white/30 uppercase mb-6">Security</h4>
+
+        <div class="space-y-4">
+
+    <!-- OLD PASSWORD -->
+    <div class="relative">
+        <input id="oldPass" type="password"
+            placeholder="Current Password"
+            class="w-full p-4 pr-12 rounded-xl bg-white/5 border border-white/10 outline-none">
+
+        <span onclick="togglePassword('oldPass', this)"
+            class="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-white/40 hover:text-white">
+            <i data-lucide="eye"></i>
+        </span>
+    </div>
+
+    <!-- NEW PASSWORD -->
+    <div class="relative">
+        <input id="newPass" type="password"
+            placeholder="New Password"
+            class="w-full p-4 pr-12 rounded-xl bg-white/5 border border-white/10 outline-none">
+
+        <span onclick="togglePassword('newPass', this)"
+            class="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-white/40 hover:text-white">
+            <i data-lucide="eye"></i>
+        </span>
+    </div>
+
+    <!-- BUTTON -->
+    <button id="changePassBtn" onclick="changePassword()"
+        class="w-full btn-elite p-4 rounded-xl font-bold">
+        Change Password
+    </button>
+
+            <button onclick="logoutAllDevices()" class="w-full p-4 bg-white/5 rounded-xl">
+                Logout All Devices
+            </button>
+        </div>
+    </div>
+
+    <!-- DATA -->
+    <div class="glass-card p-10">
+        <h4 class="text-xs font-bold text-white/30 uppercase mb-6">Data Management</h4>
+
+        <div class="flex gap-4">
+            <button onclick="exportCSV()" class="flex-1 p-4 bg-indigo-500/10 rounded-xl">
+                Export CSV
+            </button>
+            <button onclick="exportPDF()" class="flex-1 p-4 bg-purple-500/10 rounded-xl">
+                Export PDF
+            </button>
+        </div>
+    </div>
+
+<!-- 👤 ADVANCED USER GUIDE -->
+<div class="glass-card p-8 mt-8" id="userGuideCard">
+
+    <!-- HEADER -->
+    <div class="flex items-center justify-between mb-6">
+
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
+                <i data-lucide="book-open" class="w-5 h-5 text-indigo-400"></i>
+            </div>
+
+            <div>
+                <h3 class="text-lg font-extrabold">Smart User Guide</h3>
+                <p class="text-xs text-white/40">Learn how to use ZIVVI like a pro 🚀</p>
+            </div>
+        </div>
+
+        <button id="toggleAllBtn"
+            class="text-xs font-bold text-indigo-400 hover:text-indigo-300">
+            Expand All
+        </button>
+
+    </div>
+
+    <!-- GUIDE ITEMS -->
+    <div id="guideContainer" class="space-y-3">
+
+        <!-- 1️⃣ GET STARTED -->
+        <div class="guide-item">
+            <button class="guide-header">
+                <span>🚀 Getting Started</span>
+                <span class="arrow">+</span>
+            </button>
+            <div class="guide-content">
+                <p>Welcome to <b>ZIVVI</b> 💡</p>
+                <ul class="list-disc pl-5 mt-2 text-sm text-white/70 space-y-1">
+                    <li>Set your monthly budget in Settings</li>
+                    <li>Add your first expense</li>
+                    <li>Start tracking your money in real-time</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 2️⃣ ADD EXPENSE -->
+        <div class="guide-item">
+            <button class="guide-header">
+                <span>💸 Add Expenses</span>
+                <span class="arrow">+</span>
+            </button>
+            <div class="guide-content">
+                <p>Fill these fields carefully:</p>
+                <ul class="list-disc pl-5 mt-2 text-sm text-white/70 space-y-1">
+                    <li><b>Item Name</b> → What you spent on</li>
+                    <li><b>Amount</b> → Money spent</li>
+                    <li><b>Category</b> → Food, Travel, Bills, etc.</li>
+                    <li><b>Payment</b> → UPI / Card / Cash</li>
+                    <li><b>Bank</b> → Optional but useful</li>
+                </ul>
+                <p class="mt-2 text-xs text-indigo-400">💡 Tip: Accurate data = better AI insights</p>
+            </div>
+        </div>
+
+        <!-- 3️⃣ DASHBOARD -->
+        <div class="guide-item">
+            <button class="guide-header">
+                <span>📊 Dashboard Overview</span>
+                <span class="arrow">+</span>
+            </button>
+            <div class="guide-content">
+                <ul class="list-disc pl-5 text-sm text-white/70 space-y-1">
+                    <li><b>Available Balance</b> → Remaining money</li>
+                    <li><b>Spent</b> → Total expenses</li>
+                    <li><b>Limit</b> → Budget</li>
+                    <li><b>Usage %</b> → How much budget used</li>
+                </ul>
+                <p class="mt-2 text-xs text-indigo-400">
+                    🔥 Color changes (Green → Red) show your financial health
+                </p>
+            </div>
+        </div>
+
+        <!-- 4️⃣ SMART INSIGHTS -->
+        <div class="guide-item">
+            <button class="guide-header">
+                <span>🧠 Smart Insights (AI)</span>
+                <span class="arrow">+</span>
+            </button>
+            <div class="guide-content">
+                <ul class="list-disc pl-5 text-sm text-white/70 space-y-1">
+                    <li>Detects highest spending category</li>
+                    <li>Shows spending patterns</li>
+                    <li>Warns if overspending ⚠️</li>
+                </ul>
+                <p class="mt-2 text-xs text-indigo-400">
+                    💡 AI works only when enough data is available
+                </p>
+            </div>
+        </div>
+
+        <!-- 5️⃣ ANALYTICS -->
+        <div class="guide-item">
+            <button class="guide-header">
+                <span>📈 Analytics & Predictions</span>
+                <span class="arrow">+</span>
+            </button>
+            <div class="guide-content">
+                <ul class="list-disc pl-5 text-sm text-white/70 space-y-1">
+                    <li>Trend chart → Last spending pattern</li>
+                    <li>Daily average & peak spending</li>
+                    <li>Predicted balance for month</li>
+                    <li>Spending health (Excellent → Critical)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 6️⃣ FILTERS -->
+        <div class="guide-item">
+            <button class="guide-header">
+                <span>🔍 Filters & Search</span>
+                <span class="arrow">+</span>
+            </button>
+            <div class="guide-content">
+                <ul class="list-disc pl-5 text-sm text-white/70 space-y-1">
+                    <li>Filter by date (Today, Month, Year)</li>
+                    <li>Filter by payment method</li>
+                    <li>Search transactions easily</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 7️⃣ PRO TIPS -->
+        <div class="guide-item">
+            <button class="guide-header">
+                <span>⚡ Pro Tips</span>
+                <span class="arrow">+</span>
+            </button>
+            <div class="guide-content">
+                <ul class="list-disc pl-5 text-sm text-white/70 space-y-1">
+                    <li>Log every expense daily 📅</li>
+                    <li>Use categories properly</li>
+                    <li>Check analytics weekly</li>
+                    <li>Set realistic budget</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <p class="text-[10px] text-white/30 mt-5 text-center">
+        Last updated: <span id="guideUpdated"></span>
+    </p>
+
+</div>
+</div>
+
+</div>
+</div>
+
+</main>
+
+<div id="confirmModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center hidden z-50">
+
+    <div class="bg-[#0b0b0f] border border-red-500/20 rounded-3xl p-8 w-[350px] text-center">
+
+        <h3 class="text-lg font-black text-red-500 mb-4">
+            ⚠️ Danger Zone
+        </h3>
+
+        <p class="text-sm text-white/60 mb-6">
+            Are you sure you want to erase all data?<br>
+            Type <b class="text-white">confirm</b> to proceed.
+        </p>
+
+        <input 
+            id="confirmInput"
+            type="text"
+            placeholder="Type confirm..."
+            class="w-full p-3 mb-4 rounded-xl bg-white/5 border border-white/10 text-center outline-none"
+        >
+
+        <div class="flex gap-3">
+            <button onclick="closeModal()" 
+                class="flex-1 p-3 rounded-xl bg-white/10 text-white text-xs font-bold">
+                Cancel
+            </button>
+
+            <button onclick="confirmDelete()" 
+                class="flex-1 p-3 rounded-xl bg-red-500 text-white text-xs font-bold">
+                Delete
+            </button>
+        </div>
+
+    </div>
+</div>
+<script src="zivvi_home.js" defer></script>
+<script>
+ function toggleSidebar(){
+  document.querySelector("aside").classList.toggle("active");
+  document.getElementById("overlay").classList.toggle("active");
+}   
+
+// 🔥 AUTO CLOSE SIDEBAR ON OUTSIDE CLICK
+document.querySelectorAll("aside a").forEach(link => {
+  link.addEventListener("click", () => {
+    document.querySelector("aside").classList.remove("active");
+    document.getElementById("overlay").classList.remove("active");
+  });
+});
+</script>
+</body>
+</html>
