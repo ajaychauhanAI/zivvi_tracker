@@ -6,7 +6,9 @@ const jwt = require('jsonwebtoken');
 const sendEmail = require('../utils/mailer');
 
 // 🔥 CONFIG (MANUAL SWITCH)
-const FRONTEND_URL = "http://localhost:5000"; // Change to your frontend URL
+const FRONTEND_URL = "Frontend: https://zivvi-tracker.vercel.app/ 
+    
+// Change to your frontend URL
 
 // REGISTER
 router.post('/register', async (req, res) => {
