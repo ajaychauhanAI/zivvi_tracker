@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const sendEmail = require('../utils/mailer');
 
 // 🔥 CONFIG (MANUAL SWITCH)
-const FRONTEND_URL = "Frontend: https://zivvi-tracker.vercel.app/ 
+const FRONTEND_URL = "https://zivvi-tracker.vercel.app/"
     
 // Change to your frontend URL
 
