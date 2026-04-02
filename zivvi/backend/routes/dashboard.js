@@ -114,37 +114,58 @@ router.post('/expense', auth, async (req, res) => {
 // ================= UPDATE BUDGET =================
 router.post('/budget', auth, async (req, res) => {
     try {
+        // 🔐 AUTH CHECK
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized user"
+            });
+        }
+
+        // 💰 VALIDATION (STRONG)
         const amt = Number(req.body.amount);
 
-        if (!amt || amt <= 0 || amt > 100000000) {
+        if (isNaN(amt) || amt <= 0 || amt > 100000000) {
             return res.status(400).json({
                 success: false,
                 message: "Invalid budget amount"
             });
         }
 
+        // 🔥 MAIN QUERY (SAFE)
         const result = await pool.query(
             `INSERT INTO budget(user_id, amount)
              VALUES($1, $2)
-             ON CONFLICT(user_id)
-             DO UPDATE SET amount = EXCLUDED.amount
+             ON CONFLICT (user_id)
+             DO UPDATE SET 
+                amount = EXCLUDED.amount,
+                updated_at = CURRENT_TIMESTAMP
              RETURNING amount`,
             [req.user.id, amt]
         );
 
-        if (req.io) req.io.to(req.user.id).emit("update");
+        // ⚡ SOCKET UPDATE (SAFE)
+        if (req.io) {
+            req.io.to(String(req.user.id)).emit("update");
+        }
 
-        res.json({
+        // ✅ RESPONSE
+        return res.json({
             success: true,
-            message: "Budget updated",
-            data: { amount: result.rows[0].amount }
+            message: "Budget updated successfully",
+            data: {
+                amount: result.rows[0].amount
+            }
         });
 
     } catch (err) {
-        console.error("Budget error:", err.stack);
-        res.status(500).json({
+        // 🔥 REAL ERROR LOG (VERY IMPORTANT)
+        console.error("🔥 Budget API ERROR:", err);
+
+        return res.status(500).json({
             success: false,
-            message: "Budget error"
+            message: err.message,   // 👈 अब real error दिखेगा
+            error: "INTERNAL_SERVER_ERROR"
         });
     }
 });
