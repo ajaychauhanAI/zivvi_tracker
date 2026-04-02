@@ -20,6 +20,11 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
+const path = require('path');
+
+// 🔥 FIX: frontend serve karo
+app.use(express.static(path.join(__dirname, '../')));
+
 // 🔥 inject socket globally
 app.use((req, res, next) => {
     req.io = io;
@@ -34,6 +39,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes); // 🔥 NEW
 
 require('./services/weeklyEmailSystem');
+
+// ================= CHATBOT ROUTE =================
+const chatbotRoute = require("./routes/chatbot");
+app.use("/api/chatbot", chatbotRoute);
 
 // ================= TEST ROUTE =================
 app.get('/', (req, res) => {
@@ -55,3 +64,5 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
     console.log(`🔥 Server running on port ${PORT}`);
 });
+
+
