@@ -6,9 +6,7 @@ const jwt = require('jsonwebtoken');
 const sendEmail = require('../utils/mailer');
 
 // 🔥 CONFIG (MANUAL SWITCH)
-const FRONTEND_URL = "https://zivvi-tracker.vercel.app";
-    
-// Change to your frontend URL
+const FRONTEND_URL = "http://localhost:5000"; // Change to your frontend URL
 
 // REGISTER
 router.post('/register', async (req, res) => {
@@ -99,14 +97,6 @@ const html = `
                                font-weight:bold;font-size:14px;box-shadow:0 5px 15px rgba(255,77,121,0.4);">
                                🔐 Login to Your Account
                             </a>
-
-                            <!-- FALLBACK LINK -->
-                            <p style="margin-top:20px;font-size:12px;color:#888;">
-                                Or copy & paste this link:<br>
-                                <a href="${FRONTEND_URL}/login/login.html" style="color:#6a11cb;">
-                                    ${FRONTEND_URL}/login/login.html
-                                </a>
-                            </p>
 
                         </td>
                     </tr>
@@ -310,7 +300,7 @@ router.post('/forgot-password', async (req, res) => {
         );
 
         // ✅ 4. Reset link
-        const link = `${FRONTEND_URL}/zivvi/login/reset.html?token=${token}`;
+        const link = `${FRONTEND_URL}/login/reset.html?token=${token}`;
 
         // ✅ 5. PROFESSIONAL EMAIL TEMPLATE
 const html = `

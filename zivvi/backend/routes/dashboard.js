@@ -9,6 +9,10 @@ router.get('/', auth, async (req, res) => {
     try {
         const userId = req.user.id;
 
+        if (!userId) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+
         const [expensesRes, budgetRes, userRes] = await Promise.all([
             pool.query(
                 `SELECT id, name, category, amount,
@@ -23,9 +27,18 @@ router.get('/', auth, async (req, res) => {
             pool.query("SELECT name, email FROM users WHERE id=$1", [userId])
         ]);
 
+        if (!userRes.rows.length) {
+            return res.status(404).json({ message: "User not found" });
+        }
+                
         const rawData = (expensesRes.rows || []).map(e => ({
-            ...e,
-            amount: Number(e.amount) || 0
+            id: e.id,
+            name: e.name,
+            category: e.category,
+            amount: Number(e.amount) || 0,
+            payment_method: e.payment_method,
+            bank_name: e.bank_name || "",
+            date: e.date
         }));
 
         res.json({
@@ -39,7 +52,7 @@ router.get('/', auth, async (req, res) => {
                     tier: "Pro",
                     status: "ACTIVE",
                     plan: "FREE",
-                    instance: "v1.0.0"
+                    instance: "v2.1.0"
                 }
             }
         });
@@ -56,7 +69,7 @@ router.get('/', auth, async (req, res) => {
 // ================= ADD EXPENSE =================
 router.post('/expense', auth, async (req, res) => {
     try {
-        const { name, category, amount, paymentMethod, bankName } = req.body;
+        const { name, category, amount, paymentMethod, bankName, date } = req.body;
         const amt = Number(amount);
 
         if (!name || !category || !amt || amt <= 0) {
@@ -68,7 +81,7 @@ router.post('/expense', auth, async (req, res) => {
 
         const result = await pool.query(
             `INSERT INTO expenses(user_id, name, category, amount, payment_method, bank_name, date) 
-             VALUES($1, $2, $3, $4, $5, $6, NOW())
+             VALUES($1, $2, $3, $4, $5, $6, $7)
              RETURNING *`,
             [
                 req.user.id,
@@ -76,7 +89,8 @@ router.post('/expense', auth, async (req, res) => {
                 category,
                 amt,
                 paymentMethod || "Unknown",
-                bankName || "Unknown"
+                bankName || "Unknown",
+                date || new Date().toLocaleDateString("en-CA")
             ]
         );
 
@@ -189,10 +203,10 @@ router.put('/expense/:id', auth, async (req, res) => {
             });
         }
 
-        const { name, category, amount, paymentMethod, bankName } = req.body;
+        const { name, category, amount, paymentMethod, bankName, date } = req.body;
         const amt = Number(amount);
 
-        if (!name || !category || !amt || amt <= 0) {
+        if (!name || !category || !amt || amt <= 0 || !date) {
             return res.status(400).json({
                 success: false,
                 message: "Invalid input"
@@ -201,14 +215,15 @@ router.put('/expense/:id', auth, async (req, res) => {
 
         const result = await pool.query(
             `UPDATE expenses 
-             SET name=$1, category=$2, amount=$3, payment_method=$4, bank_name=$5
-             WHERE id=$6 AND user_id=$7`,
+             SET name=$1, category=$2, amount=$3, payment_method=$4, bank_name=$5, date=$6
+             WHERE id=$7 AND user_id=$8`,
             [
                 name,
                 category,
                 amt,
                 paymentMethod || "Unknown",
                 bankName || "Unknown",
+                date || new Date().toLocaleDateString("en-CA"),
                 expenseId,
                 userId
             ]
@@ -498,6 +513,117 @@ router.get('/report/download', auth, async (req, res) => {
             success: false,
             error: err.message // ✅ debug friendly
         });
+    }
+});
+
+router.delete('/reset-secure', auth, async (req, res) => {
+    const client = await pool.connect();
+
+    try {
+        const userId = req.user?.id;
+        const { password } = req.body || {};
+
+        // ==============================
+        // 🔐 VALIDATION
+        // ==============================
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized"
+            });
+        }
+
+        if (!password || typeof password !== "string") {
+            return res.status(400).json({
+                success: false,
+                message: "Password required"
+            });
+        }
+
+        // ==============================
+        // 👤 FETCH USER PASSWORD
+        // ==============================
+        const userRes = await pool.query(
+            "SELECT password FROM users WHERE id=$1 LIMIT 1",
+            [userId]
+        );
+
+        if (!userRes.rows.length) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        const hashedPassword = userRes.rows[0].password;
+
+        // ==============================
+        // 🔍 VERIFY PASSWORD
+        // ==============================
+        const isMatch = await bcrypt.compare(password, hashedPassword);
+
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                message: "Wrong password"
+            });
+        }
+
+        // ==============================
+        // 🔥 TRANSACTION START
+        // ==============================
+        await client.query("BEGIN");
+
+        await client.query(
+            "DELETE FROM expenses WHERE user_id=$1",
+            [userId]
+        );
+
+        await client.query(
+            "DELETE FROM budget WHERE user_id=$1",
+            [userId]
+        );
+
+        // ==============================
+        // ✅ COMMIT
+        // ==============================
+        await client.query("COMMIT");
+
+        // ==============================
+        // 🔄 REALTIME UPDATE (if socket exists)
+        // ==============================
+        if (req.io) {
+            req.io.to(userId).emit("update");
+        }
+
+        // ==============================
+        // 📤 RESPONSE
+        // ==============================
+        res.json({
+            success: true,
+            message: "All data cleared securely"
+        });
+
+    } catch (err) {
+
+        // ==============================
+        // ❌ ROLLBACK ON ERROR
+        // ==============================
+        try {
+            await client.query("ROLLBACK");
+        } catch (rollbackErr) {
+            console.error("Rollback error:", rollbackErr);
+        }
+
+        console.error("Secure reset error:", err);
+
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+
+    } finally {
+        client.release();
     }
 });
 
