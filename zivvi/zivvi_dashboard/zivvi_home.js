@@ -24,7 +24,7 @@ let currentFilters = {
     date: "all"
 };
 
-const BASE_URL = "https://zivvi-tracker.onrender.com"; // Backend URL - Change this to your actual backend URL
+const BASE_URL = "http://localhost:5000"; // Backend URL - Change this to your actual backend URL
 
 // ==============================
 // 📌 PAGE NAVIGATION SYSTEM
@@ -181,13 +181,48 @@ function renderAll() {
     updateCoachText();
     updateAnalyticsCards();
     renderHeatmap();
+
+    initHeatmapRealtime();
+
     initAISettings();
     
     updateAICoach(appData.rawData);
+    
+    renderPaymentAnalytics();
 
     UserGuide.init();
-    initSessionTracker()
+    initSessionTracker();
     initLiveDateTime();
+
+    setDefaultDate();   // ✅ SAFE CALL
+    initDateListener(); // 🔥 IMPORTANT
+}
+
+function setDefaultDate() {
+    const dateInput = document.getElementById("date");
+
+    if (!dateInput) return;
+
+    // 🔥 ONLY FIRST TIME (no override after user change)
+    if (!dateInput.value && !dateInput.dataset.locked) {
+        const today = new Date().toLocaleDateString("en-CA");
+        dateInput.value = today;
+    }
+}
+
+function initDateListener() {
+    const dateInput = document.getElementById("date");
+
+    if (!dateInput) return;
+
+    // ❗ duplicate listener avoid
+    if (dateInput.dataset.listenerAdded) return;
+
+    dateInput.addEventListener("change", () => {
+        dateInput.dataset.locked = "true"; // 🔥 LOCK USER DATE
+    });
+
+    dateInput.dataset.listenerAdded = "true";
 }
 
 function toNumber(val) {
@@ -335,22 +370,64 @@ function renderDash() {
 
 function getEmo(category) {
     const emojiMap = {
-        food: '🍣',
-        bills: '⚡',
-        travel: '🚲',
-        fun: '💎'
+        // --- Pehle se maujood categories (Standard) ---
+        food: '🍲',          // Groceries ya general khana
+        bills: '⚡',         // Electricity, water, etc.
+        electricity: '💡',   // Specific Light/Power Bill
+        travel: '🚲',        // Transport (Cycle/Bus/Train)
+        fun: '🎡',           // Entertainment/Hobbies
+        'fast food': '🍔',   // Pizza, Burger, Street Food
+        vegetable: '🥦',     // Sabzi, Fruit Mandi
+        rent: '🏠',          // Ghar ka kiraya
+        shopping: '🛍️',      // Kapde, general accessories
+        health: '💊',        // Dawai, doctor, hospital fee
+        education: '📚',     // Fees, books, courses
+        fuel: '⛽',          // Gaadi ka tel (Petrol/Diesel)
+        gifts: '🎁',         // Doosron ke liye tohfe
+        recharge: '📱',      // Mobile/Internet/DTH recharge
+        savings: '💰',       // Paisa bachana
+        investment: '📈',    // Stocks, mutual funds, gold
+        electronic: '💻',    // Laptop, Mobile, Gadgets
+        party: '🎉',         // Celebrations, clubbing, outings
+
+        // --- Naye useful additions (Complete) ---
+
+        // 🏡 Home Maintenance & Utilites (Aham Kharche)
+        'home repair': '🔨',    // Ghar ki marammat, plumbing, painting
+        cleaning: '🧹',         // Safai, house help, dustbin bags, etc.
+        furniture: '🛋️',        // Sofas, beds, decor items
+
+        // 🚗 Vehicle & Transport (Detailed)
+        insurance: '🛡️',     // Gaadi, Health, ya Life insurance premium
+        car: '🚗',           // Car se related koi bada kharcha (Repair, Service)
+        taxi: '🚕',          // Taxi, Auto, Ola/Uber ride
+
+        // 🧸 Personal Care & Family
+        personal: '💇',      // Salon, haircuting, grooming products
+        beauty: '💄',        // Cosmetics, skincare
+        baby: '🍼',          // Diapers, toys, baby food
+        pets: '🐾',          // Pet food, vet bills, toys
+
+        // ☕ Lifestyle & Miscellaneous
+        coffee: '☕',        // Café, chai/coffee shop visits
+        donations: '🤝',     // Charity, religious contributions, helping
+        fees: '💳',          // Bank fees, late fees, hidden charges
+        fines: '👮',         // Challan, penalties (traffic fine, library fine)
+
+        gym: '🏋️',           // Gym membership, equipment, protein
+
+        // 🚗🏍️ Vehicle Insurance (Detailed)
+        'bike insurance': '🏍️',    // Specifically for bike premium
+        'car insurance': '🚗',     // Specifically for car premium        
     };
 
+    // return standard approach, specific logic remains same
     return emojiMap[(category || "").toLowerCase()] ?? '💰';
 }
 
 function renderPie() {
     try {
-        // ==============================
-        // 🧠 AI TOGGLE CHECK (MOST IMPORTANT)
-        // ==============================
         const isEnabled = localStorage.getItem("ai_enabled") === "true";
-
         const insightEl = document.getElementById('smartInsightText');
 
         if (!isEnabled) {
@@ -359,35 +436,22 @@ function renderPie() {
                 insightEl.style.opacity = "0.5";
                 insightEl.style.filter = "blur(1px)";
             }
-            return; // 🔥 STOP everything
+            return;
         }
 
-        // ==============================
-        // ✅ SAFETY: Chart loaded check
-        // ==============================
         if (typeof Chart === "undefined") return;
 
         const data = getFilteredData();
-
-        // ==============================
-        // 🔥 SAFE EMPTY DATA
-        // ==============================
         if (!Array.isArray(data)) return;
 
-        // ==============================
-        // 🔥 Dynamic categories
-        // ==============================
         const cats = [...new Set(data.map(e => e.category || "Other"))];
 
-        // ==============================
-        // 🎨 Colors auto generate
-        // ==============================
         const colors = cats.map((_, i) =>
             `hsl(${i * 60}, 70%, 60%)`
         );
 
         // ==============================
-        // 📊 VALUES CALCULATION
+        // 📊 VALUES
         // ==============================
         const vals = cats.map(c =>
             data
@@ -395,11 +459,17 @@ function renderPie() {
                 .reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0)
         );
 
+        // ==============================
+        // 🔥 DETAILED DATA (SAFE)
+        // ==============================
+        const detailedData = cats.map(c =>
+            data.filter(e =>
+                (e.category || "").toLowerCase() === c.toLowerCase()
+            )
+        );
+
         const total = vals.reduce((a, b) => a + b, 0);
 
-        // ==============================
-        // 🔢 TOTAL UPDATE
-        // ==============================
         const totalEl = document.getElementById('pieTotal');
         if (totalEl) totalEl.innerText = `₹${total.toLocaleString()}`;
 
@@ -408,9 +478,6 @@ function renderPie() {
 
         const ctx = canvas.getContext('2d');
 
-        // ==============================
-        // 🔁 DESTROY OLD CHART
-        // ==============================
         if (pie instanceof Chart) {
             pie.destroy();
         }
@@ -446,11 +513,12 @@ function renderPie() {
         }
 
         // ==============================
-        // 🎨 CREATE CHART
+        // 🎨 CHART (FINAL FIXED TOOLTIP)
         // ==============================
         pie = new Chart(ctx, {
             type: 'doughnut',
             data: {
+                labels: cats, // 🔥 IMPORTANT FIX
                 datasets: [{
                     data: vals,
                     backgroundColor: colors,
@@ -463,13 +531,42 @@ function renderPie() {
             options: {
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: false }
+                    legend: { display: false },
+
+                    tooltip: {
+                        callbacks: {
+
+                            // ✅ TITLE SAFE
+                            title: function(context) {
+                                if (!context || !context.length) return "";
+                                const index = context[0].dataIndex;
+                                return cats[index] || "";
+                            },
+
+                            // ✅ MAIN VALUE SAFE
+                            label: function(context) {
+                                return `Total: ₹${context.raw || 0}`;
+                            },
+
+                            // ✅ EXTRA DATA SAFE
+                            afterLabel: function(context) {
+                                const index = context.dataIndex;
+                                const items = detailedData[index] || [];
+
+                                if (!items.length) return "No items";
+
+                                return items.slice(0, 3).map(e =>
+                                    `${e.name || "Item"} (${e.category || "Other"}) - ₹${e.amount || 0}`
+                                );
+                            }
+                        }
+                    }
                 }
             }
         });
 
         // ==============================
-        // 🤖 SMART INSIGHT LOGIC
+        // 🤖 INSIGHT (UNCHANGED)
         // ==============================
         const maxVal = Math.max(...vals);
         const topCatIndex = vals.indexOf(maxVal);
@@ -492,9 +589,6 @@ function renderPie() {
             insightEl.style.filter = "none";
         }
 
-        // ==============================
-        // 📊 LEGEND
-        // ==============================
         const legend = document.getElementById('legendBox');
         if (!legend) return;
 
@@ -520,7 +614,7 @@ function renderBankStats() {
         const container = document.getElementById("bankStats");
         if (!container) return;
 
-       const data = getFilteredData();
+        const data = getFilteredData();
 
         // ==============================
         // 📭 EMPTY STATE
@@ -535,15 +629,19 @@ function renderBankStats() {
         }
 
         // ==============================
-        // 📊 CALCULATE TOTAL
+        // 📊 CALCULATE TOTAL (BANK + METHOD)
         // ==============================
         const banks = {};
 
         data.forEach(e => {
             const bank = (e.bank_name || "Unknown").trim();
+            const method = (e.payment_method || "Unknown").trim();
             const amount = parseFloat(e.amount) || 0;
 
-            banks[bank] = (banks[bank] || 0) + amount;
+            // 🔥 KEY = BANK + METHOD
+            const key = `${bank} (${method})`;
+
+            banks[key] = (banks[key] || 0) + amount;
         });
 
         // ==============================
@@ -553,23 +651,45 @@ function renderBankStats() {
             .sort((a, b) => b[1] - a[1]);
 
         // ==============================
-        // 🎨 UI RENDER (FINAL FIX)
+        // 🎨 UI RENDER (UPGRADED)
         // ==============================
-        container.innerHTML = sortedBanks.map(([bank, total]) => `
-            <div class="flex justify-between items-center p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] transition-all duration-300">
+        container.innerHTML = sortedBanks.map(([bank, total]) => {
 
-                <!-- 🏦 Bank -->
-                <span class="text-xs font-bold text-white/70 truncate">
-                    ${bank}
-                </span>
+            // 🔥 METHOD EXTRACT (for badge color)
+            let method = "Unknown";
+            if (bank.includes("(")) {
+                method = bank.split("(")[1].replace(")", "").trim();
+            }
 
-                <!-- 💰 Amount -->
-                <span class="text-xs font-black text-indigo-400">
-                    ₹${total.toLocaleString()}
-                </span>
+            // 🎨 COLOR BASED ON METHOD
+            let badgeColor = "bg-white/10 text-white/60";
 
-            </div>
-        `).join('');
+            if (method === "UPI") badgeColor = "bg-emerald-500/10 text-emerald-400";
+            else if (method === "Card") badgeColor = "bg-indigo-500/10 text-indigo-400";
+            else if (method === "Cash") badgeColor = "bg-yellow-500/10 text-yellow-400";
+
+            return `
+                <div class="flex justify-between items-center p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] transition-all duration-300">
+
+                    <!-- 🏦 Bank + Method -->
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-white/70 truncate">
+                            ${bank.split("(")[0]}
+                        </span>
+
+                        <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${badgeColor}">
+                            ${method}
+                        </span>
+                    </div>
+
+                    <!-- 💰 Amount -->
+                    <span class="text-xs font-black text-indigo-400">
+                        ₹${total.toLocaleString()}
+                    </span>
+
+                </div>
+            `;
+        }).join('');
 
     } catch (err) {
         console.error("renderBankStats error:", err);
@@ -744,7 +864,7 @@ function renderTrend() {
             data: {
                 labels: last10.map((e, i) => {
                     if (!e.date) return `#${i+1}`;
-                    const d = new Date(e.date);
+                    const d = new Date(e.date + "T00:00:00");
                     return isNaN(d) ? `#${i+1}` : d.toLocaleDateString("en-IN", {
                         day: "2-digit",
                         month: "short"
@@ -793,6 +913,7 @@ async function save() {
         // 📥 INPUT FETCH
         // ==============================
         const nameEl = document.getElementById('name');
+        const dateEl = document.getElementById('date');
         const catEl = document.getElementById('cat');
         const amtEl = document.getElementById('amt');
         const payEl = document.getElementById('payment');
@@ -801,7 +922,11 @@ async function save() {
         const inputBox = document.getElementById("catInputBox");
         const newInput = document.getElementById('newCatInput');
 
+        // 🔥 IMPORTANT: STORE USER DATE
+        const selectedDate = dateEl?.value;
+
         const obj = {
+            date: selectedDate,
             name: nameEl?.value?.trim(),
             category: getSelectedCategory(),
             amount: parseFloat(amtEl?.value),
@@ -812,7 +937,7 @@ async function save() {
         // ==============================
         // ⚠️ VALIDATION
         // ==============================
-        if (!obj.name || !obj.category || isNaN(obj.amount) || obj.amount <= 0) {
+        if (!obj.name || !obj.category || isNaN(obj.amount) || obj.amount <= 0 || !obj.date) {
             showToast("⚠️ Enter valid data");
             return;
         }
@@ -857,26 +982,40 @@ async function save() {
         showToast("✅ Expense added");
 
         // ==============================
-        // 🧹 CLEAR FORM
+        // 🧹 CLEAR FORM (EXCEPT DATE 🔥)
         // ==============================
         if (nameEl) nameEl.value = "";
         if (amtEl) amtEl.value = "";
         if (bankEl) bankEl.value = "";
         if (newInput) newInput.value = "";
 
+        // ❗ DATE CLEAR NAHI KARNA
+        // dateEl.value = ""; ❌ REMOVE THIS IF EXISTS
+
         // ==============================
-        // 🔥 CATEGORY UI RESET (MAIN FIX)
+        // 🔥 CATEGORY UI RESET
         // ==============================
-        if (inputBox) inputBox.classList.add("hidden");   // ❗ input + cross hide
+        if (inputBox) inputBox.classList.add("hidden");
         if (catEl) {
-            catEl.classList.remove("hidden");             // dropdown show
+            catEl.classList.remove("hidden");
             catEl.selectedIndex = 0;
         }
 
         // ==============================
-        // 🔄 REFRESH DATA
+        // 🔄 REFRESH DATA (WITH DATE PRESERVE)
         // ==============================
         sync();
+
+        // 🔥 AFTER SYNC, RESTORE DATE
+        setTimeout(() => {
+            const dateInput = document.getElementById("date");
+            if (dateInput && selectedDate) {
+                dateInput.value = selectedDate;
+
+                // 🔥 LOCK so auto overwrite na ho
+                dateInput.dataset.locked = "true";
+            }
+        }, 300);
 
     } catch (err) {
         console.error("Save error:", err);
@@ -997,7 +1136,7 @@ function renderFilteredLedger(data) {
         const sorted = [...data].reverse();
 
         // ==============================
-        // 📊 RENDER LIST (PREMIUM UI)
+        // 📊 RENDER LIST (FINAL UI)
         // ==============================
         container.innerHTML = sorted.map(e => {
             const name = escapeHTML(e.name || "Untitled");
@@ -1008,13 +1147,13 @@ function renderFilteredLedger(data) {
             const date = escapeHTML(e.date || "N/A");
 
             return `
-                <div class="flex justify-between items-center p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] transition-all duration-300 group">
+                <div class="flex justify-between items-center p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] transition-all duration-300">
 
                     <!-- 🔹 LEFT -->
                     <div class="flex items-center gap-3">
                         <span class="text-lg">${getEmo(category)}</span>
                         <div>
-                            <p class="text-sm font-bold text-white group-hover:text-white/90">
+                            <p class="text-sm font-bold text-white">
                                 ${name}
                             </p>
                             <p class="text-[10px] text-white/30 uppercase tracking-widest">
@@ -1024,9 +1163,26 @@ function renderFilteredLedger(data) {
                     </div>
 
                     <!-- 🔹 RIGHT -->
-                    <p class="text-sm font-black text-indigo-400">
-                        ₹${amount}
-                    </p>
+                    <div class="flex items-center gap-4">
+
+                        <!-- 💰 AMOUNT -->
+                        <p class="text-sm font-black text-indigo-400">
+                            ₹${amount}
+                        </p>
+
+                        <!-- ✏️ EDIT -->
+                        <button onclick="editExpense(${e.id})"
+                            class="px-2 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 text-xs font-bold transition">
+                            ✏️
+                        </button>
+
+                        <!-- 🗑️ DELETE -->
+                        <button onclick="deleteExpense(${e.id})"
+                            class="px-2 py-1 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-bold transition">
+                            🗑️
+                        </button>
+
+                    </div>
 
                 </div>
             `;
@@ -1066,34 +1222,34 @@ async function deleteExpense(id) {
 }
 
 async function editExpense(id) {
-    const name = prompt("Edit name:");
-    const amount = prompt("Edit amount:");
-    const category = prompt("Category (Food/Bills/Travel/Fun):");
-    const paymentMethod = prompt("Payment (UPI/Card/Cash):");
-    const bankName = prompt("Bank:");
 
-    if (!name || !amount || !category) return;
+    const existing = appData.rawData.find(e => e.id === id);
+
+    // 🔥 OLD VALUES (default ke liye)
+    const name = prompt("Edit name:", existing?.name);
+    const amount = prompt("Edit amount:", existing?.amount);
+    const category = prompt("Category:", existing?.category);
+    const paymentMethod = prompt("Payment:", existing?.payment_method);
+    const bankName = prompt("Bank:", existing?.bank_name);
+
+    // 🔥 DATE PROMPT (IMPORTANT)
+    const date = prompt("Edit date (YYYY-MM-DD):", existing?.date);
+
+    if (!name || !amount || !category || !date) {
+        showToast("⚠️ All fields required");
+        return;
+    }
+
+    const parsedAmount = Number(amount);
+
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+        showToast("⚠️ Invalid amount");
+        return;
+    }
 
     try {
-        appData.rawData = appData.rawData.map(e => {
-            if (e.id === id) {
-                return {
-                    ...e,
-                    name,
-                    amount: Number(amount),
-                    category,
-                    payment_method: paymentMethod,
-                    bank_name: bankName
-                };
-            }
-            return e;
-        });
 
-        renderLedger();
-        renderPie();
-        renderDash();
-
-        await fetch(`${BASE_URL}/api/dashboard/expense/${id}`, {
+        const res = await fetch(`${BASE_URL}/api/dashboard/expense/${id}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -1101,19 +1257,26 @@ async function editExpense(id) {
             },
             body: JSON.stringify({
                 name,
-                amount: Number(amount),
+                amount: parsedAmount,
                 category,
                 paymentMethod,
-                bankName
+                bankName,
+                date // ✅ FIXED
             })
         });
 
-        showToast("✏️ Updated successfully");
+        const text = await res.text();
+        console.log(text);
+
+        if (!res.ok) throw new Error(text);
+
+        await sync();
+
+        showToast("✅ Updated successfully");
 
     } catch (err) {
         console.error(err);
         showToast("❌ Update failed");
-        sync();
     }
 }
 
@@ -1232,7 +1395,7 @@ function renderSettings() {
         const userTier = profile.tier || "Standard";
         const userStatus = profile.status || "ACTIVE";
         const userPlan = profile.plan || "FREE";
-        const instance = profile.instance || "v1.0.0";
+        const instance = profile.instance || "v2.1.0";
 
         // ==============================
         // 🧑 AVATAR GENERATION
@@ -1382,31 +1545,49 @@ function updateTodaySpend() {
 
 function updateFinanceScore() {
     try {
-        // ==============================
-        // 🔥 1. USE FILTERED DATA
-        // ==============================
-        const data = getFilteredData();
+        const el = document.getElementById("financeScore");
+        if (!el) return;
 
         // ==============================
-        // 💰 TOTAL SPENT
+        // 🔥 FILTERED DATA
         // ==============================
-        const total = data.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+        const data = Array.isArray(getFilteredData()) ? getFilteredData() : [];
 
         // ==============================
-        // 📊 SMART BUDGET (FILTER BASED)
+        // 📭 EMPTY CASE
         // ==============================
-        let budget = appData.budget || 0;
+        if (!data.length) {
+            el.innerText = "0";
+            el.style.color = "#6b7280";
+            el.style.textShadow = "none";
+            return;
+        }
 
-        switch (currentFilters.date) {
+        // ==============================
+        // 💰 TOTAL SPENT (SAFE)
+        // ==============================
+        const total = data.reduce((s, e) => {
+            const amt = Number(e.amount);
+            return s + (isNaN(amt) ? 0 : amt);
+        }, 0);
 
+        // ==============================
+        // 📊 SMART BUDGET (UNCHANGED)
+        // ==============================
+        let budget = Number(appData?.budget) || 0;
+        const baseBudget = Number(appData?.budget) || 0; // 🔥 MAIN FIX BASE
+
+        const now = new Date();
+        const daysInMonth = new Date(
+            now.getFullYear(),
+            now.getMonth() + 1,
+            0
+        ).getDate();
+
+        switch (currentFilters?.date) {
             case "today":
-                const now = new Date();
-                const days = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-                budget = budget / days;
-                break;
-
             case "yesterday":
-                budget = 0;
+                budget = budget / daysInMonth;
                 break;
 
             case "6_months":
@@ -1420,42 +1601,69 @@ function updateFinanceScore() {
         }
 
         // ==============================
-        // 📈 SCORE CALCULATION
+        // 📊 SAFETY CHECK
         // ==============================
-        let percent = budget > 0 ? (total / budget) * 100 : 0;
-
-        let score = 100;
-
-        if (budget === 0) {
-            score = total === 0 ? 100 : 50;  // special case
-        } 
-        else if (percent <= 50) {
-            score = 90;
-        } 
-        else if (percent <= 80) {
-            score = 70;
-        } 
-        else if (percent <= 100) {
-            score = 50;
-        } 
-        else {
-            score = 30;
+        if (baseBudget <= 0) {
+            el.innerText = "0";
+            el.style.color = "#6b7280";
+            el.style.textShadow = "none";
+            return;
         }
+
+        // ==============================
+        // 📈 USAGE % (FINAL FIX)
+        // ==============================
+        const percent = (total / baseBudget) * 100;
+
+        // ==============================
+        // 🔥 STABILITY CHECK (SAFE)
+        // ==============================
+        const last5 = data.slice(-5);
+        const prev5 = data.slice(-10, -5);
+
+        const avgLast =
+            last5.reduce((s, e) => s + (Number(e.amount) || 0), 0) /
+            (last5.length || 1);
+
+        const avgPrev =
+            prev5.reduce((s, e) => s + (Number(e.amount) || 0), 0) /
+            (prev5.length || 1);
+
+        let stabilityPenalty = 0;
+
+        if (prev5.length > 0 && avgLast > avgPrev * 1.5) {
+            stabilityPenalty = 15;
+        }
+
+        // ==============================
+        // 🔥 FINAL SCORE
+        // ==============================
+        let score = 100 - percent;
+
+        score -= stabilityPenalty;
 
         score = Math.max(0, Math.min(100, Math.round(score)));
 
         // ==============================
         // 🎯 UI UPDATE
         // ==============================
-        const el = document.getElementById("financeScore");
+        el.innerText = score;
 
-        if (el) {
-            el.innerText = score;
+        el.style.fontSize = "28px";
+        el.style.fontWeight = "900";
+        el.style.letterSpacing = "1px";
 
-            // 🔥 COLOR BASED
-            if (score > 80) el.style.color = "#10b981";
-            else if (score > 50) el.style.color = "#f59e0b";
-            else el.style.color = "#ef4444";
+        if (score >= 75) {
+            el.style.color = "#22c55e";
+            el.style.textShadow = "0 0 12px rgba(34,197,94,0.7)";
+        } 
+        else if (score >= 50) {
+            el.style.color = "#f59e0b";
+            el.style.textShadow = "0 0 12px rgba(245,158,11,0.7)";
+        } 
+        else {
+            el.style.color = "#ef4444";
+            el.style.textShadow = "0 0 12px rgba(239,68,68,0.7)";
         }
 
     } catch (err) {
@@ -1485,38 +1693,115 @@ function openModal() {
 }
 
 function closeModal() {
-    document.getElementById("confirmModal").classList.add("hidden");
+
+    const modal = document.getElementById("confirmModal");
+    const confirmInput = document.getElementById("confirmInput");
+    const passwordInput = document.getElementById("deletePassword");
+    const deleteBtn = document.getElementById("deleteBtn");
+
+    // 🔒 Hide modal
+    if (modal) {
+        modal.classList.add("hidden");
+    }
+
+    // 🔄 Reset confirm input
+    if (confirmInput) {
+        confirmInput.value = "";
+    }
+
+    // 🔄 Reset password input
+    if (passwordInput) {
+        passwordInput.value = "";
+        passwordInput.classList.add("hidden");
+    }
+
+    // 🔄 Disable delete button again
+    if (deleteBtn) {
+        deleteBtn.classList.add("disabled");
+    }
 }
 
 // 🔥 FINAL DELETE LOGIC
 async function confirmDelete() {
-    const input = document.getElementById("confirmInput").value.trim().toLowerCase();
 
-    // 🔥 CASE INSENSITIVE CHECK
+    const confirmInputEl = document.getElementById("confirmInput");
+    const passwordInputEl = document.getElementById("deletePassword");
+
+    if (!confirmInputEl || !passwordInputEl) {
+        console.error("Inputs missing ❌");
+        showToast("Something went wrong");
+        return;
+    }
+
+    const input = confirmInputEl.value.trim().toLowerCase();
+
+    // ✅ STEP 1: confirm check
     if (input !== "confirm") {
         showToast("❌ Please type 'confirm' to proceed");
+        return;
+    }
+
+    // ✅ STEP 2: password field show karo
+    if (passwordInputEl.classList.contains("hidden")) {
+        passwordInputEl.classList.remove("hidden");
+        passwordInputEl.focus();
+        showToast("🔐 Enter your password");
+        return; // ⚠️ yaha rukna zaroori hai
+    }
+
+    const password = passwordInputEl.value;
+
+    // ✅ STEP 3: password empty check
+    if (!password) {
+        showToast("❌ Enter your password");
         return;
     }
 
     try {
         const token = localStorage.getItem("token");
 
-        await fetch(`${BASE_URL}/api/dashboard/reset`, {
+        // 🔥 IMPORTANT CHANGE: new secure API
+        const res = await fetch(`${BASE_URL}/api/dashboard/reset-secure`, {
             method: "DELETE",
             headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`
-            }
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ password }) // 🔥 password send
         });
 
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.message);
+
         closeModal();
+
+        resetDeleteModal();
 
         showToast("✅ All data erased successfully!");
 
         sync();
 
+        // 🔥 optional hard refresh
+        setTimeout(() => {
+           window.location.reload();
+        }, 1000);
+
     } catch (err) {
         console.error(err);
-        showToast("❌ Failed to delete data");
+        showToast("❌ " + err.message);
+    }
+}
+
+function resetDeleteModal() {
+    const confirmInput = document.getElementById("confirmInput");
+    const passwordInput = document.getElementById("deletePassword");
+
+    if (confirmInput) confirmInput.value = "";
+    
+    if (passwordInput) {
+        passwordInput.value = "";
+        passwordInput.classList.add("hidden");
     }
 }
 
@@ -1642,6 +1927,10 @@ function applyFilters() {
         renderDash(); 
         
         updateFinanceScore();  // 🔥 MUST
+        
+        renderPaymentAnalytics();
+        
+
 
     } catch (err) {
         console.error("applyFilters error:", err);
@@ -1829,7 +2118,7 @@ function initPaymentAutoFill() {
 // 🔥 CATEGORY SYSTEM (PRO VERSION)
 // ==============================
 
-let defaultCategories = ["Food", "Bills", "Travel", "Fun"];
+let defaultCategories = ["Food", "Bills", "Travel", "Party"];
 
 // 🔹 Load from storage
 let categories = JSON.parse(localStorage.getItem("categories")) || defaultCategories;
@@ -2427,7 +2716,7 @@ async function exportPDF() {
                 <td>₹${Number(e.amount).toLocaleString()}</td>
                 <td>${e.payment_method || "-"}</td>
                 <td>${e.bank_name || "-"}</td>
-                <td>${e.date}</td>
+                <td>${new Date(e.date + "T00:00:00").toLocaleDateString("en-IN")}</td>
             </tr>
         `).join("");
 
@@ -2848,7 +3137,7 @@ function updateAICoach(data) {
         // ======================
         const uniqueDays = new Set(
             data.map(e => {
-                const d = new Date(e.date);
+                const d = new Date(e.date + "T00:00:00");
                 return isNaN(d) ? "invalid" : d.toDateString();
             })
         );
@@ -3108,33 +3397,6 @@ function initNotificationToggles() {
     }
 }
 
-// ==============================
-// HeatMap Logic
-// ==============================
-function groupByDate(data) {
-    const map = {};
-
-    (data || []).forEach(e => {
-        if (!e.date) return; // 🔥 safety
-
-        const d = new Date(e.date);
-        if (isNaN(d)) return;
-
-        const date = d.toLocaleDateString('en-CA');
-
-        if (!map[date]) {
-            map[date] = { total: 0, items: [] };
-        }
-
-        const amt = parseFloat(e.amount) || 0;
-
-        map[date].total += amt;
-        map[date].items.push(e);
-    });
-
-    return map;
-}
-
 function getAdvancedIntensity(amount) {
     if (amount === 0) return "#020617";
 
@@ -3146,211 +3408,271 @@ function getAdvancedIntensity(amount) {
     return "linear-gradient(135deg,#10b981,#34d399)";
 }
 
-function showTooltip(box, data, date) {
-    const tooltip = document.getElementById("heatmapTooltip");
-    const wrapper = document.getElementById("heatmapWrapper");
+function groupByDate(data = []) {
+    const map = Object.create(null);
 
-    if (!tooltip || !wrapper) return;
+    data.forEach(e => {
+        if (!e || !e.date) return;
 
-    // 🔥 CONTENT
-    let html = `
-        <div class="text-[10px] text-white/40 mb-1">${date}</div>
-        <div class="text-sm font-black text-emerald-400 mb-2">
-            ₹${data.total}
+        const d = new Date(e.date);
+        if (isNaN(d)) return;
+
+        // 🔥 FIXED FORMAT (CRITICAL)
+        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+        const amt = Number(e.amount) || 0;
+
+        if (!map[key]) {
+            map[key] = { total: 0, items: [] };
+        }
+
+        map[key].total += amt;
+        map[key].items.push(e);
+    });
+
+    return map;
+}
+
+function groupByDate(data = []) {
+    const map = Object.create(null);
+
+    data.forEach(e => {
+        if (!e || !e.date) return;
+
+        const d = new Date(e.date);
+        if (isNaN(d)) return;
+
+        // 🔥 FIXED FORMAT (CRITICAL)
+        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+        const amt = Number(e.amount) || 0;
+
+        if (!map[key]) {
+            map[key] = { total: 0, items: [] };
+        }
+
+        map[key].total += amt;
+        map[key].items.push(e);
+    });
+
+    return map;
+}
+
+function getMonthShort(index) {
+    const months = [
+        "JAN","FEB","MAR","APR","MAY","JUN",
+        "JUL","AUG","SEP","OCT","NOV","DEC"
+    ];
+    return months[index] || "";
+}
+
+function getHeatColor(val) {
+    if (!val) return "#111827"; // dark base
+
+    if (val < 100) return "#22c55e";
+    if (val < 500) return "#eab308";
+    if (val < 1000) return "#f97316";
+
+    return "#ef4444";
+}
+
+function buildTooltipHTML(d) {
+    return `
+        <div style="font-size:11px; color:#9ca3af; margin-bottom:4px; font-weight:600;">
+            ${d.date}
         </div>
+
+        <div style="font-size:18px; font-weight:900; color:#34d399; margin-bottom:8px;">
+            ₹${d.total}
+        </div>
+
+        ${
+            d.items.length
+                ? d.items.map(i => `
+                    <div style="
+                        display:flex;
+                        justify-content:space-between;
+                        font-size:12px;
+                        padding:4px 0;
+                        border-bottom:1px solid rgba(255,255,255,0.06);
+                    ">
+                        <span style="color:#d1d5db;">
+                            ${i.name || "Item"}
+                        </span>
+                        <span style="color:#818cf8; font-weight:700;">
+                            ₹${parseFloat(i.amount) || 0}
+                        </span>
+                    </div>
+                `).join('')
+                : `<div style="color:#6b7280; font-size:12px;">No spending</div>`
+        }
     `;
-
-    if (!data.items.length) {
-        html += `<div class="text-white/30">No spending</div>`;
-    } else {
-        html += data.items.map(i => `
-            <div class="flex justify-between text-[11px] gap-6 py-1 border-b border-white/5">
-                <span>${i.name || "Item"}</span>
-                <span class="text-indigo-400">₹${parseFloat(i.amount) || 0}</span>
-            </div>
-        `).join('');
-    }
-
-    tooltip.innerHTML = html;
-
-    // 🔥 TEMP SHOW (for size)
-    tooltip.style.visibility = "hidden";
-    tooltip.classList.remove("hidden");
-
-    const tooltipWidth = tooltip.offsetWidth;
-    const tooltipHeight = tooltip.offsetHeight;
-
-    // 🔥 USE REAL POSITION (IMPORTANT FIX)
-    const boxRect = box.getBoundingClientRect();
-    const wrapperRect = wrapper.getBoundingClientRect();
-
-    // =========================
-    // 🔥 FINAL POSITION
-    // =========================
-
-    // 👉 RIGHT SIDE
-    let left = boxRect.right - wrapperRect.left + 8;
-
-    // 👉 PERFECT CENTER ALIGN (REAL FIX)
-    let top = boxRect.top - wrapperRect.top 
-            + (boxRect.height / 2) 
-            - (tooltipHeight / 2);
-
-    // =========================
-    // 🔥 EDGE FIX
-    // =========================
-
-    // right overflow
-    if (left + tooltipWidth > wrapper.clientWidth) {
-        left = boxRect.left - wrapperRect.left - tooltipWidth - 8;
-    }
-
-    // top overflow
-    if (top < 5) top = 5;
-
-    // bottom overflow
-    if (top + tooltipHeight > wrapper.clientHeight) {
-        top = wrapper.clientHeight - tooltipHeight - 5;
-    }
-
-    // =========================
-    // 🔥 APPLY
-    // =========================
-
-    tooltip.style.left = left + "px";
-    tooltip.style.top = top + "px";
-
-    tooltip.style.visibility = "visible";
 }
 
 function renderHeatmap() {
+
     const container = document.getElementById("heatmapGrid");
     const tooltip = document.getElementById("heatmapTooltip");
-    const wrapper = document.getElementById("heatmapWrapper");
+    const monthsRow = document.getElementById("heatmapMonths");
 
-    if (!container || !tooltip || !wrapper) return;
+    if (!container || !tooltip) return;
 
-    // 🔥 1. USE FILTERED DATA
-    const filteredData = getFilteredData();
-
-    const grouped = groupByDate(filteredData);
+    const data = getFilteredData();
+    const grouped = groupByDate(data);
 
     const today = new Date();
 
-    // 🔥 2. DYNAMIC MONTH LOGIC (IMPORTANT)
-    let year = today.getFullYear();
-    let month = today.getMonth();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
 
-    // 👉 If filter = last_month
-    if (currentFilters.date === "last_month") {
-        const d = new Date(year, month - 1);
-        year = d.getFullYear();
-        month = d.getMonth();
+    const days = [];
+
+    for (let i = 364; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+
+        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+        days.push({
+            date: key,
+            total: grouped[key]?.total || 0,
+            items: grouped[key]?.items || [],
+            day: (d.getDay() + 6) % 7,
+            month: d.getMonth()
+        });
     }
-
-    // 👉 If filter = last_year → show Jan (or you can expand later)
-    if (currentFilters.date === "last_year") {
-        year = year - 1;
-        month = 0;
-    }
-
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     container.innerHTML = "";
 
-    // 🔥 ALIGNMENT
-    for (let i = 0; i < firstDay; i++) {
-        const empty = document.createElement("div");
-        container.appendChild(empty);
-    }
+    let col = document.createElement("div");
+    col.className = "flex flex-col gap-[3px] flex-1";
 
-    // 🔥 MAIN LOOP
-    for (let day = 1; day <= daysInMonth; day++) {
+    let lastMonth = -1;
 
-        const dateObj = new Date(year, month, day);
-        const key = dateObj.toLocaleDateString('en-CA');
+    days.forEach((d, index) => {
 
-        const dayData = grouped[key] || { total: 0, items: [] };
-
-        const box = document.createElement("div");
-
-        box.className = `
-            w-10 h-10 rounded-xl cursor-pointer
-            transition-all duration-300
-            hover:scale-110
-        `;
-
-        box.style.background = getAdvancedIntensity(dayData.total);
-
-        // 🔥 TODAY HIGHLIGHT (ONLY IF SAME MONTH)
-        if (
-            day === today.getDate() &&
-            month === today.getMonth() &&
-            year === today.getFullYear()
-        ) {
-            box.style.border = "2px solid #6366f1";
+        if (d.day === 0 && col.childElementCount > 0) {
+            container.appendChild(col);
+            col = document.createElement("div");
+            col.className = "flex flex-col gap-[3px] flex-1";
         }
 
-        // 🔥 ENTRY ANIMATION
-        box.style.opacity = "0";
-        setTimeout(() => {
-            box.style.opacity = "1";
-        }, day * 15);
+        const box = document.createElement("div");
+        box.className = "heat-box";
 
-        // 🔥 TOOLTIP
-        box.addEventListener("mouseenter", () => {
-            box.style.boxShadow = "0 0 25px rgba(16,185,129,0.6)";
+        box.style.background = getHeatColor(d.total);
 
-            const boxRect = box.getBoundingClientRect();
-            const wrapperRect = wrapper.getBoundingClientRect();
+        if (d.date === todayStr) {
+            box.classList.add("today-box");
+        }
 
-            let left = boxRect.right - wrapperRect.left + 12;
-            let top = boxRect.top - wrapperRect.top;
+        attachHeatmapTooltip(box, tooltip, d);
 
-            if (left + tooltip.offsetWidth > wrapper.clientWidth) {
-                left = boxRect.left - wrapperRect.left - tooltip.offsetWidth - 12;
-            }
-
-            let html = `
-                <div class="text-[10px] text-white/40 mb-1">${key}</div>
-                <div class="text-sm font-black text-emerald-400 mb-2">
-                    ₹${dayData.total}
-                </div>
-            `;
-
-            if (!dayData.items.length) {
-                html += `<div class="text-white/30">No spending</div>`;
-            } else {
-                html += dayData.items.map(i => `
-                    <div class="flex justify-between text-[11px] gap-6 py-1 border-b border-white/5">
-                        <span>${i.name || "Item"}</span>
-                        <span class="text-indigo-400">₹${parseFloat(i.amount) || 0}</span>
-                    </div>
-                `).join('');
-            }
-
-            tooltip.innerHTML = html;
-            tooltip.style.left = left + "px";
-            tooltip.style.top = top + "px";
-            tooltip.classList.remove("hidden");
-        });
-
-        box.addEventListener("mouseleave", () => {
-            box.style.boxShadow = "none";
-            tooltip.classList.add("hidden");
-        });
-
-        // 🔥 CLICK → FILTER LEDGER (RESPECT GLOBAL FILTER)
         box.addEventListener("click", () => {
-            if (!dayData.items.length) return;
-
-            // 🔥 temporary override (only for click view)
-            renderFilteredLedger(dayData.items);
+            if (!d.items.length) return;
+            renderFilteredLedger(d.items);
         });
 
-        container.appendChild(box);
+        col.appendChild(box);
+    });
+
+    container.appendChild(col);
+
+    // ==============================
+    // 🔥 FINAL MONTH FIX (PERFECT ALIGNMENT)
+    // ==============================
+    if (monthsRow) {
+
+    monthsRow.innerHTML = "";
+
+    const weeks = container.children;
+    let shownMonths = new Set();
+
+    for (let i = 0; i < weeks.length; i++) {
+
+        // 🔥 RIGHT SIDE CALCULATION (IMPORTANT)
+        const dayIndex = days.length - ((weeks.length - i) * 7);
+        const d = days[dayIndex];
+
+        const span = document.createElement("span");
+
+        span.style.display = "inline-block";
+        span.style.width = "14px";
+        span.style.textAlign = "left";
+        span.style.fontSize = "10px";
+        span.style.color = "rgba(255,255,255,0.4)";
+
+        if (d && !shownMonths.has(d.month)) {
+            span.innerText = getMonthShort(d.month);
+            shownMonths.add(d.month);
+        } else {
+            span.innerText = "";
+        }
+
+        monthsRow.appendChild(span);
     }
+}
+}
+
+function attachHeatmapTooltip(box, tooltip, data) {
+
+    const wrapper = document.getElementById("heatmapWrapper");
+
+    box.addEventListener("mouseenter", () => {
+
+        tooltip.innerHTML = buildTooltipHTML(data);
+        tooltip.classList.remove("hidden");
+
+        const boxRect = box.getBoundingClientRect();
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const tipRect = tooltip.getBoundingClientRect();
+
+        // 🔥 SCROLL OFFSET ADD (THIS IS THE REAL FIX)
+        let scrollLeft = wrapper.scrollLeft;
+        let scrollTop = wrapper.scrollTop;
+
+        // 👉 RIGHT SIDE (FIXED)
+        let left = boxRect.right - wrapperRect.left + scrollLeft + 10;
+
+        // 👉 VERTICAL CENTER
+        let top = boxRect.top - wrapperRect.top + scrollTop + (boxRect.height / 2) - (tipRect.height / 2);
+
+        // 🔥 RIGHT OVERFLOW → LEFT SIDE
+        if (left + tipRect.width > wrapper.scrollWidth) {
+            left = boxRect.left - wrapperRect.left + scrollLeft - tipRect.width - 10;
+        }
+
+        // 🔥 TOP FIX
+        if (top < 0) top = 0;
+
+        // 🔥 BOTTOM FIX
+        if (top + tipRect.height > wrapper.scrollHeight) {
+            top = wrapper.scrollHeight - tipRect.height;
+        }
+
+        tooltip.style.left = left + "px";
+        tooltip.style.top = top + "px";
+    });
+
+    box.addEventListener("mouseleave", () => {
+        tooltip.classList.add("hidden");
+    });
+}
+
+function initHeatmapRealtime() {
+
+    setInterval(() => {
+        renderHeatmap();
+    }, 60000);
+
+    const now = new Date();
+
+    const msToMidnight =
+        new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1) - now;
+
+    setTimeout(() => {
+        renderHeatmap();
+        initHeatmapRealtime();
+    }, msToMidnight);
 }
 
 // ==============================
@@ -3659,3 +3981,412 @@ function initLiveDateTime() {
         console.error("Live time error:", err);
     }
 }
+
+ 
+//NEW FEATURES BELOW
+
+function renderPaymentAnalytics() {
+    try {
+        if (typeof Chart === "undefined") return;
+
+        // ==============================
+        // 🔥 GET FILTERED DATA (IMPORTANT)
+        // ==============================
+        let data = getFilteredData();
+
+        // fallback safety
+        if (!Array.isArray(data)) data = [];
+
+        // ==============================
+        // 📭 EMPTY STATE
+        // ==============================
+        if (!data.length) {
+            const container = document.getElementById("paymentStats");
+            if (container) {
+                container.innerHTML = `
+                    <div class="text-center text-white/30 text-xs py-6">
+                        No payment data available
+                    </div>
+                `;
+            }
+
+            if (window.paymentChartInstance) {
+                window.paymentChartInstance.destroy();
+                window.paymentChartInstance = null;
+            }
+
+            return;
+        }
+
+        // ==============================
+        // 📊 CALCULATE TOTALS
+        // ==============================
+        const methods = { UPI: 0, Card: 0, Cash: 0 };
+
+        data.forEach(e => {
+            const method = (e.payment_method || "").trim();
+            const amt = parseFloat(e.amount) || 0;
+
+            if (methods.hasOwnProperty(method)) {
+                methods[method] += amt;
+            }
+        });
+
+        const labels = Object.keys(methods);
+        const values = Object.values(methods);
+        const total = values.reduce((a, b) => a + b, 0);
+
+        // ==============================
+        // 📊 CHART SETUP
+        // ==============================
+        const canvas = document.getElementById("paymentChart");
+        if (!canvas) return;
+
+        const ctx = canvas.getContext("2d");
+
+        if (window.paymentChartInstance) {
+            window.paymentChartInstance.destroy();
+        }
+
+        // ==============================
+        // 🔥 CENTER TEXT PLUGIN
+        // ==============================
+        const centerTextPlugin = {
+            id: "centerText",
+            beforeDraw(chart) {
+                const { width, height } = chart;
+                const ctx = chart.ctx;
+
+                ctx.save();
+
+                ctx.font = "bold 20px sans-serif";
+                ctx.fillStyle = "#ffffff";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(`₹${total.toLocaleString()}`, width / 2, height / 2 - 6);
+
+                ctx.font = "10px sans-serif";
+                ctx.fillStyle = "#888";
+                ctx.fillText("Total Spend", width / 2, height / 2 + 14);
+
+                ctx.restore();
+            }
+        };
+
+        // ==============================
+        // 📊 CREATE CHART
+        // ==============================
+        window.paymentChartInstance = new Chart(ctx, {
+            type: "doughnut",
+            data: {
+                labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: ["#10b981", "#6366f1", "#f59e0b"],
+                    borderWidth: 0,
+                    cutout: "75%"
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                return `₹${context.raw.toLocaleString()}`;
+                            }
+                        }
+                    }
+                }
+            },
+            plugins: [centerTextPlugin]
+        });
+
+        // ==============================
+        // 🏆 MOST USED METHOD
+        // ==============================
+        const maxIndex = values.indexOf(Math.max(...values));
+        const topMethod = labels[maxIndex];
+        const topPercent = total
+            ? ((values[maxIndex] / total) * 100).toFixed(1)
+            : 0;
+
+        // ==============================
+        // 📊 RENDER STATS
+        // ==============================
+        const container = document.getElementById("paymentStats");
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="text-[11px] text-indigo-400 font-bold mb-3">
+                💳 Most Used: ${topMethod} (${topPercent}%)
+            </div>
+
+            ${labels.map((m, i) => {
+                const val = values[i];
+                const perc = total ? ((val / total) * 100).toFixed(1) : 0;
+
+                return `
+                    <div class="flex justify-between text-xs py-1 border-b border-white/5">
+                        <span class="text-white/60">${m}</span>
+                        <span class="text-indigo-400 font-bold">
+                            ₹${val.toLocaleString()} (${perc}%)
+                        </span>
+                    </div>
+                `;
+            }).join("")}
+
+            <div class="text-[10px] text-white/40 mt-4 italic">
+                💡 ${
+                    topPercent > 85
+                        ? `High reliance on ${topMethod}. Consider balancing usage`
+                        : `You mostly use ${topMethod} for payments`
+                }
+            </div>
+        `;
+
+    } catch (err) {
+        console.error("Payment Analytics error:", err);
+    }
+}
+
+
+
+// ==========================
+// 🤖 TOGGLE CHATBOT
+// ==========================
+function toggleChatbot(){
+  const panel = document.getElementById("chatPanel");
+
+  if(panel.classList.contains("hidden")){
+    panel.classList.remove("hidden");
+
+    setTimeout(()=>{
+      panel.classList.remove("scale-95","opacity-0");
+      panel.classList.add("scale-100","opacity-100");
+    },10);
+
+  } else {
+    panel.classList.add("scale-95","opacity-0");
+
+    setTimeout(()=>{
+      panel.classList.add("hidden");
+    },200);
+  }
+}
+
+function useSuggestion(text){
+  document.getElementById("chatInput").value = text;
+}
+
+// ==========================
+// 💬 SEND MESSAGE (FINAL)
+// ==========================
+async function sendMessage(){
+
+  const input = document.getElementById("chatInput");
+  const box = document.getElementById("chatMessages");
+
+  let msg = input.value.trim();
+  if(!msg) return;
+
+  appendMessage("user", msg);
+  input.value = "";
+
+  showTyping();
+
+  try {
+
+    const res = await fetch(`${BASE_URL}/api/chatbot/stream`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("token")
+      },
+      body: JSON.stringify({ message: msg })
+    });
+
+    if(!res.ok){
+      removeTyping();
+      appendMessage("bot", "⚠️ Server error. Try again.");
+      return;
+    }
+
+    // ==========================
+    // 🤖 BOT MESSAGE CREATE
+    // ==========================
+    const botId = "bot-" + Date.now();
+
+    appendMessage("bot", "", botId);
+
+    const bubble = document.getElementById(botId);
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+
+    let fullText = "";
+    let typingRemoved = false;
+
+    while(true){
+
+      const { done, value } = await reader.read();
+      if(done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+
+      if(!typingRemoved){
+        removeTyping();
+        typingRemoved = true;
+      }
+
+      fullText += chunk;
+      fullText = fullText.replace(/\s+/g, " ");
+
+      bubble.innerHTML = formatMessage(fullText);
+
+      box.scrollTo({
+        top: box.scrollHeight,
+        behavior: "smooth"
+      });
+
+    }
+
+  } catch (err) {
+
+    console.error(err);
+    removeTyping();
+    appendMessage("bot", "⚠️ Network error. Please try again.");
+
+  }
+}
+
+function formatMessage(text){
+
+  return text
+    .replace(/\n/g, "<br>")
+    .replace(/₹(\d+)/g, "<span class='text-indigo-400 font-bold'>₹$1</span>")
+    .replace(/⚠️|🚨/g, "<span class='text-yellow-400'>$&</span>")
+    .replace(/✅/g, "<span class='text-green-400'>$&</span>")
+    .replace(/💡/g, "<span class='text-purple-400'>$&</span>");
+}
+
+// ==========================
+// 🧱 MESSAGE RENDER
+// ==========================
+function appendMessage(type, text, id=null){
+
+  const box = document.getElementById("chatMessages");
+
+  const html = type === "user"
+    ? createUserMessage(text)
+    : createBotMessage(text, id);
+
+  box.insertAdjacentHTML("beforeend", html);
+  box.scrollTop = box.scrollHeight;
+}
+
+function createBotMessage(text, id){
+
+  return `
+  <div class="flex gap-3 items-start animate-[fadeIn_0.25s_ease]">
+
+    <!-- avatar -->
+    <div class="w-9 h-9 flex items-center justify-center rounded-xl 
+                bg-gradient-to-br from-indigo-500 to-purple-600 text-xs shadow-md">
+      🤖
+    </div>
+
+    <!-- message -->
+    <div class="flex flex-col gap-1 max-w-[80%]">
+
+      <span class="text-[10px] text-indigo-400 font-bold tracking-widest uppercase">
+        Zivvi AI
+      </span>
+
+      <div id="${id || ""}"
+           class="px-4 py-3 rounded-2xl 
+                  bg-gradient-to-br from-white/[0.08] to-white/[0.03]
+                  border border-white/10 backdrop-blur-xl 
+                  text-white/90 leading-relaxed
+                  shadow-[0_6px_30px_rgba(0,0,0,0.4)]
+                  whitespace-pre-line">
+        ${formatMessage(text)}
+      </div>
+
+    </div>
+
+  </div>
+  `;
+}
+
+function createUserMessage(text){
+  return `
+  <div class="self-end max-w-[70%]">
+
+    <div class="
+      px-4 py-2
+      rounded-2xl
+      bg-gradient-to-br from-indigo-500 to-purple-600
+      text-white text-sm
+
+      inline-block
+      break-words
+    ">
+      ${text}
+    </div>
+
+  </div>
+  `;
+}
+
+// ==========================
+// ✨ TYPING ANIMATION
+// ==========================
+function showTyping(){
+
+  const box = document.getElementById("chatMessages");
+
+  const typing = document.createElement("div");
+  typing.id = "typingBubble";
+
+  typing.innerHTML = `
+    <div class="flex items-center gap-2 text-white/40 text-xs">
+      🤖 typing
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+  `;
+
+  box.appendChild(typing);
+  box.scrollTop = box.scrollHeight;
+}
+
+function removeTyping(){
+  const t = document.getElementById("typingBubble");
+  if(t) t.remove();
+}
+
+// ==========================
+// ⌨️ ENTER KEY SUPPORT
+// ==========================
+document.getElementById("chatInput").addEventListener("keypress", function(e){
+  if(e.key === "Enter"){
+    sendMessage();
+  }
+});
+
+// ==========================
+// 🔥 AUTO SCROLL FIX (SMOOTH)
+// ==========================
+const observer = new MutationObserver(() => {
+  const box = document.getElementById("chatMessages");
+  box.scrollTop = box.scrollHeight;
+});
+
+observer.observe(document.getElementById("chatMessages"), {
+  childList: true
+});
+

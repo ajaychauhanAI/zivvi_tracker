@@ -18,13 +18,24 @@
 <aside class="w-80 border-r border-white/5 bg-black/40 backdrop-blur-md p-8 flex flex-col">
 
     <!-- 🚀 LOGO -->
-    <div class="flex items-center gap-4 mb-12">
-        <div class="w-12 h-12 btn-elite rounded-2xl flex items-center justify-center shadow-2xl rotate-6">
-            <i data-lucide="zap" class="text-white"></i>
+    <div class="flex flex-col items-start mb-12">
+
+        <!-- ICON + TITLE -->
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 btn-elite rounded-2xl flex items-center justify-center shadow-2xl rotate-6">
+                <i data-lucide="zap" class="text-white"></i>
+            </div>
+
+            <h1 class="text-2xl font-black tracking-tighter italic">
+                ZIVVI<span class="text-indigo-500">.pro</span>
+            </h1>
         </div>
-        <h1 class="text-2xl font-black tracking-tighter italic">
-            ZIVVI<span class="text-indigo-500">.pro</span>
-        </h1>
+
+        <!-- 🔥 TAGLINE (NOW BELOW) -->
+        <p class="text-[10px] text-white/30 tracking-[0.3em] uppercase font-semibold pl-16">
+            The Financial Tracker
+        </p>
+
     </div>
 
     <!-- 📌 NAV -->
@@ -315,8 +326,13 @@
                                 <i data-lucide="plus-circle" class="w-4 h-4 text-indigo-500"></i> New Log Entry
                             </h4>
                             <div class="space-y-4">
-                                <input type="text" id="name" placeholder="Item Name" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-indigo-500 font-bold text-sm">
 
+                                <!-- 📅 DATE FIELD -->
+                                <input type="date" id="date" class="col-span-5 w-full bg-white/5 border border-white/10 px-4 py-4 rounded-2xl outline-none text-sm font-semibold"/>
+
+                                <!-- ITEM NAME FIELD -->
+                                <input type="text" id="name" placeholder="Item Name" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-indigo-500 font-bold text-sm">
+ 
                                 <div class="flex gap-4">
 
                                     <div id="catWrapper" class="flex-1 relative">
@@ -348,8 +364,7 @@
                                <option value="UPI">UPI</option>
                                <option value="Card">Card</option>
                                <option value="Cash">Cash</option>
-                        </select>
-
+                            </select>
 
                         <!-- Bank (3 parts) -->
                         <input type="text" id="bank" placeholder="Bank Name" class="col-span-3 w-full bg-white/5 border border-white/10 px-4 py-4 rounded-2xl outline-none text-sm font-semibold">
@@ -366,7 +381,7 @@
             </div>
 
             <div class="px-6">
-                <select id="filterMethod" class="p-3 bg-[#0b0b0f] border border-white/10 rounded-xl mb-4 text-sm font-semibold text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                <select id="filterMethod" class="mt-4 p-3 bg-[#0b0b0f] border border-white/10 rounded-xl text-sm font-semibold text-white outline-none">
                     <option value="">All</option>
                     <option value="UPI">UPI</option>
                     <option value="Card">Card</option>
@@ -405,7 +420,7 @@
             <canvas id="pieChart"></canvas>
             <!-- 🔹 CENTER INFO -->
             <div class="absolute text-center">
-                <p class="text-[10px] font-bold text-white/10 uppercase tracking-[0.2em] mb-1">
+                <p class="text-[12px] font-bold uppercase tracking-[0.2em] mb-1 text-white/60 cumulative-text">
                     Cumulative
                 </p>
                 <p class="text-4xl font-black tracking-tighter text-white" id="pieTotal">
@@ -439,10 +454,7 @@
 
         <!-- 🔹 SMART INSIGHT -->
         <div class="w-full mt-10">
-            <!-- ⚠️ TREND ALERT -->
-            <div id="trendAlert" class="text-[10px] text-yellow-400 font-bold text-center mb-4 hidden">
-                ⚠️ Spending spike detected
-            </div>
+
             <div class="p-6 bg-indigo-500/5 rounded-[2rem] border border-indigo-500/10 relative group hover:border-indigo-500/30 transition-all">
                 <div class="flex items-center gap-3 mb-3">
                     <div class="w-8 h-8 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400">
@@ -457,6 +469,12 @@
                     AI is analyzing your spending behavior...
                 </p>
             </div>
+ 
+            <!-- ⚠️ TREND ALERT -->
+            <div id="trendAlert" class="text-[15px] text-yellow-400 font-bold text-center mb-4 hidden">
+                ⚠️ Spending spike detected
+            </div>
+
         </div>
     </div>
 </div>
@@ -586,42 +604,98 @@
 
 </div>
 
-<div class="glass-card p-8 relative overflow-visible">
+<div class="glass-card p-8 relative overflow-hidden">
 
-    <!-- 🔥 Glow -->
+    <!-- 🔥 BACKGROUND GLOW -->
     <div class="absolute -top-20 -right-20 w-72 h-72 bg-indigo-500/10 blur-[100px]"></div>
 
-    <!-- HEADER -->
-    <div class="flex justify-between items-center mb-6">
-        <h3 class="text-sm font-black uppercase tracking-widest text-white/30">
-            Spending Heatmap
-        </h3>
-        <span class="text-[10px] text-white/20 font-bold">
-            Monthly Activity
-        </span>
-    </div>
+    <!-- ================= HEADER ================= -->
+    <div class="flex justify-between items-start mb-6">
 
-    <!-- WEEK LABEL -->
-    <div class="grid grid-cols-7 text-[9px] text-white/20 font-bold mb-2">
-        <span>Mon</span><span>Tue</span><span>Wed</span>
-        <span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
-    </div>
-
-    <!-- 🔥 WRAPPER (VERY IMPORTANT) -->
-    <div id="heatmapWrapper" class="relative">
-
-        <!-- GRID -->
-        <div id="heatmapGrid"
-             class="grid grid-cols-7 gap-2"></div>
-
-        <!-- 🔥 TOOLTIP (FIXED BUG VERSION) -->
-        <div id="heatmapTooltip"
-             class="hidden absolute z-50 p-4 rounded-2xl 
-                    bg-black/90 text-xs backdrop-blur-xl 
-                    border border-white/10 shadow-2xl min-w-[180px]">
+        <!-- LEFT -->
+        <div>
+            <h3 class="text-sm font-black uppercase tracking-widest text-white/30">
+                Spending Heatmap
+            </h3>
+            <p class="text-[11px] text-white/40 mt-1">
+                Daily expense intensity across the last year
+            </p>
         </div>
 
-    </div>    
+        <!-- RIGHT BADGE -->
+        <div class="flex items-center gap-2">
+
+            <span class="text-[10px] font-bold px-3 py-1 rounded-full 
+                         bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                Last 365 Days
+            </span>
+
+        </div>
+    </div>
+
+    <!-- ================= MONTH LABELS ================= -->
+    <div id="heatmapMonths"
+      class="relative text-[10px] text-white/30 mb-3 ml-8 h-5">
+    </div>
+
+    <!-- ================= MAIN SECTION ================= -->
+    <div class="flex gap-3">
+
+        <!-- 🔹 DAY AXIS -->
+        <div class="flex flex-col justify-between text-[9px] text-white/30 font-bold py-1">
+            <span>Mon</span>
+            <span>Tus</span>
+            <span>Wed</span>
+            <span>Thu</span>
+            <span>Fri</span>
+            <span>Sat</span>
+            <span>Sun</span>
+        </div>
+
+        <!-- 🔹 HEATMAP WRAPPER -->
+        <div id="heatmapWrapper" class="relative flex-1 overflow-visible">
+
+            <!-- 🔥 GRID -->
+            <div id="heatmapGrid" class="flex gap-[3px] w-full">
+            </div>
+
+            <!-- 🔥 TOOLTIP -->
+            <div id="heatmapTooltip"
+                 class="hidden fixed z-[9999] p-4 rounded-xl 
+                        bg-black/95 text-xs backdrop-blur-xl 
+                        border border-white/10 shadow-2xl min-w-[200px] 
+                        transition-all duration-150">
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= FOOTER ================= -->
+    <div class="flex items-center justify-between mt-6">
+
+        <!-- 🔹 LEFT TEXT -->
+        <span class="text-[10px] text-white/30 font-medium">
+            Less
+        </span>
+
+        <!-- 🔹 COLOR SCALE -->
+        <div class="flex items-center gap-1">
+
+            <div class="w-3 h-3 rounded-sm bg-white/10"></div>
+            <div class="w-3 h-3 rounded-sm bg-green-400/40"></div>
+            <div class="w-3 h-3 rounded-sm bg-yellow-400/60"></div>
+            <div class="w-3 h-3 rounded-sm bg-orange-500/70"></div>
+            <div class="w-3 h-3 rounded-sm bg-red-500"></div>
+
+        </div>
+
+        <!-- 🔹 RIGHT TEXT -->
+        <span class="text-[10px] text-white/30 font-medium">
+            More
+        </span>
+
+    </div>
 
 </div>
 
@@ -631,7 +705,7 @@
     <!-- 🔹 LEFT: SMART HELPER -->
     <div class="col-span-12 lg:col-span-6 relative overflow-hidden rounded-[2.5rem] p-[1px] 
                 bg-gradient-to-br from-indigo-500/30 via-purple-500/20 to-transparent
-                h-fit max-h-[420px]">
+                h-fit max-h-[500px]">
 
         <div class="bg-[#060608]/90 backdrop-blur-md rounded-[2.5rem] p-8 
                     flex flex-col gap-6 h-full border border-white/5 overflow-hidden">
@@ -702,17 +776,57 @@
 
     <!-- 🔹 RIGHT: PAYMENT ANALYTICS -->
     <div class="col-span-12 lg:col-span-6 glass-card p-8 
-                h-fit max-h-[420px] overflow-hidden flex flex-col gap-4">
+                h-fit max-h-[500px] overflow-hidden flex flex-col gap-4">
 
         <h4 class="text-xs font-bold text-white/30 uppercase">
             Payment Analytics
         </h4>
 
-        <div id="bankStats" class="text-xs space-y-3 overflow-y-auto max-h-[120px]"></div>
+        <div id="bankStats" class="text-xs space-y-3 overflow-y-auto max-h-[500px]"></div>
 
     </div>
 
 </div>
+
+<div class="col-span-12">
+
+    <!-- 🔥 MAIN GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- 🔹 PAYMENT ANALYTICS -->
+        <div class="glass-card p-8 h-full">
+
+            <h4 class="text-xs font-black text-white/30 uppercase tracking-widest mb-6">
+                Payment Analytics
+            </h4>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+
+                <!-- LEFT -->
+                <div class="flex items-center justify-center">
+                    <div class="w-[220px] h-[220px]">
+                        <canvas id="paymentChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- RIGHT -->
+                <div class="space-y-5">
+                    <div id="paymentStats" class="space-y-2"></div>
+                    <div id="paymentBars" class="space-y-3"></div>
+                    <div id="paymentInsight"
+                        class="text-[11px] text-white/40 italic">
+                        AI analyzing your payment behavior...
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+        
+    </div>
+
+</div>
+
 </div>
 
 <div id="page-settings" class="hidden space-y-10 animate-in fade-in zoom-in duration-700">
@@ -1208,6 +1322,134 @@
 
 </main>
 
+<!-- ================= 🤖 FLOATING BUTTON ================= -->
+<div 
+  id="chatToggle"
+  onclick="toggleChatbot()"
+  class="fixed bottom-6 right-6 w-14 h-14 flex items-center justify-center rounded-full 
+         bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white text-2xl 
+         shadow-[0_10px_40px_rgba(99,102,241,0.6)]
+         cursor-pointer hover:scale-110 active:scale-95 transition z-[999] group"
+>
+  <span class="relative z-10">🤖</span>
+
+  <!-- glow -->
+  <span class="absolute w-full h-full rounded-full bg-indigo-500/20 blur-xl opacity-60 group-hover:opacity-100 transition"></span>
+</div>
+
+<!-- ================= 💬 CHAT PANEL ================= -->
+<div 
+  id="chatPanel"
+  class="fixed bottom-24 right-6 w-[380px] h-[560px] flex flex-col rounded-[2rem] 
+         backdrop-blur-2xl bg-gradient-to-br from-[#0f0f1a]/95 to-[#050509]/95 
+         border border-white/10 shadow-[0_30px_100px_rgba(0,0,0,0.8)] 
+         overflow-hidden z-[999] hidden transition-all duration-300 scale-95 opacity-0"
+>
+
+  <!-- 🔹 HEADER -->
+  <div class="flex items-center justify-between px-5 py-4 
+              bg-gradient-to-r from-white/[0.05] to-transparent border-b border-white/10">
+
+    <div class="flex items-center gap-3 text-white">
+      <div class="w-9 h-9 flex items-center justify-center rounded-xl 
+                  bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
+        🤖
+      </div>
+
+      <div>
+        <p class="text-sm font-bold tracking-tight">Zivvi AI</p>
+        <p class="text-[10px] text-green-400 font-bold uppercase tracking-widest">
+          ● Online • Smart Mode
+        </p>
+      </div>
+    </div>
+
+    <button onclick="toggleChatbot()" 
+      class="text-white/40 hover:text-white text-lg transition hover:scale-110">
+      ✕
+    </button>
+
+  </div>
+
+  <!-- 🔹 QUICK ACTIONS -->
+  <div class="flex gap-2 px-3 py-2 overflow-x-auto border-b border-white/10 scrollbar-hide">
+
+    <button onclick="useSuggestion('Show my balance')" 
+      class="px-3 py-1 text-xs rounded-full bg-white/10 hover:bg-white/20 text-white whitespace-nowrap transition">
+      💰 Balance
+    </button>
+
+    <button onclick="useSuggestion('Monthly report')" 
+      class="px-3 py-1 text-xs rounded-full bg-white/10 hover:bg-white/20 text-white whitespace-nowrap transition">
+      📊 Report
+    </button>
+
+    <button onclick="useSuggestion('Give saving advice')" 
+      class="px-3 py-1 text-xs rounded-full bg-white/10 hover:bg-white/20 text-white whitespace-nowrap transition">
+      💡 Advice
+    </button>
+
+  </div>
+
+  <!-- 🔹 MESSAGES -->
+  <div id="chatMessages" 
+       class="flex-1 p-5 overflow-y-auto flex flex-col items-start gap-4 text-sm scroll-smooth">
+
+    <!-- 🔥 INITIAL BOT MESSAGE -->
+    <div class="flex gap-3 items-start animate-[fadeIn_0.3s_ease]">
+
+      <div class="w-9 h-9 flex items-center justify-center rounded-xl 
+                  bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-xs shadow">
+        🤖
+      </div>
+
+      <div class="max-w-[75%] px-4 py-3 rounded-2xl 
+                  bg-gradient-to-br from-white/[0.08] to-white/[0.03]
+                  text-white/90 border border-white/10 backdrop-blur-md">
+
+        👋 Hey! Main <b>Zivvi AI</b> hoon 💰<br>
+        Aap apna balance, expense ya savings puch sakte ho.
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- 🔹 TYPING INDICATOR -->
+  <div id="typingIndicator" class="hidden px-5 pb-2 text-xs text-white/40 flex items-center gap-2">
+    🤖 typing
+    <span class="dot"></span>
+    <span class="dot"></span>
+    <span class="dot"></span>
+  </div>
+
+  <!-- 🔹 INPUT -->
+  <div class="flex gap-2 p-3 bg-white/5 border-t border-white/10 backdrop-blur-xl">
+
+    <input
+      id="chatInput"
+      type="text"
+      placeholder="Ask Zivvi AI..."
+      autocomplete="off"
+      class="flex-1 px-4 py-2 rounded-xl bg-white/10 text-white 
+             placeholder-white/40 outline-none 
+             focus:ring-2 focus:ring-indigo-500 focus:bg-white/15 transition"
+    />
+
+    <button onclick="sendMessage()"
+      class="px-5 py-2 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 
+             text-white font-medium 
+             shadow-lg hover:scale-105 active:scale-95 
+             hover:shadow-[0_6px_25px_rgba(99,102,241,0.6)]
+             transition">
+      Send
+    </button>
+
+  </div>
+
+</div>
+
 <div id="confirmModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center hidden z-50">
 
     <div class="bg-[#0b0b0f] border border-red-500/20 rounded-3xl p-8 w-[350px] text-center">
@@ -1227,7 +1469,12 @@
             placeholder="Type confirm..."
             class="w-full p-3 mb-4 rounded-xl bg-white/5 border border-white/10 text-center outline-none"
         >
-
+        
+        <input type="password"
+           id="deletePassword"
+           placeholder="Enter your password"
+           class="hidden w-full p-3 mb-4 rounded-xl bg-white/5 border border-white/10 text-center outline-none" />
+           
         <div class="flex gap-3">
             <button onclick="closeModal()" 
                 class="flex-1 p-3 rounded-xl bg-white/10 text-white text-xs font-bold">
