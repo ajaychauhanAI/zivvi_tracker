@@ -33,13 +33,29 @@ pool.connect()
             );
         `);
 
-        // 💰 BUDGET
+        // 💰 BUDGET (🔥 FIXED)
         await pool.query(`
             CREATE TABLE IF NOT EXISTS budget (
                 id SERIAL PRIMARY KEY,
-                user_id INT REFERENCES users(id) ON DELETE CASCADE,
-                amount NUMERIC NOT NULL
+                user_id INT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+                amount NUMERIC NOT NULL CHECK (amount > 0),
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+        `);
+
+        // 🔥 IMPORTANT: Ensure UNIQUE constraint (in case table already exists)
+        await pool.query(`
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM pg_constraint 
+                    WHERE conname = 'unique_user_budget'
+                ) THEN
+                    ALTER TABLE budget
+                    ADD CONSTRAINT unique_user_budget UNIQUE(user_id);
+                END IF;
+            END
+            $$;
         `);
 
         // 📊 EXPENSES
@@ -49,7 +65,7 @@ pool.connect()
                 user_id INT REFERENCES users(id) ON DELETE CASCADE,
                 name TEXT,
                 category TEXT,
-                amount NUMERIC NOT NULL,
+                amount NUMERIC NOT NULL CHECK (amount > 0),
                 date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 payment_method VARCHAR(50),
                 bank_name VARCHAR(100)
@@ -57,12 +73,19 @@ pool.connect()
         `);
 
         // ⚡ INDEXES (performance boost)
-        await pool.query(`CREATE INDEX IF NOT EXISTS idx_expenses_user ON expenses(user_id);`);
-        await pool.query(`CREATE INDEX IF NOT EXISTS idx_budget_user ON budget(user_id);`);
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_expenses_user 
+            ON expenses(user_id);
+        `);
 
-        console.log("🔥 All tables ready");
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_budget_user 
+            ON budget(user_id);
+        `);
+
+        console.log("🔥 All tables ready (Production Mode)");
     } catch (err) {
-        console.error("❌ Table creation error:", err.message);
+        console.error("❌ Table creation error:", err);
     }
 })();
 
