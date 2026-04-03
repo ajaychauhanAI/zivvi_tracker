@@ -123,11 +123,21 @@ const html = `
 </div>
 `;
         
-        console.log("📨 sendEmail function CALL ho raha hai");
-        
-        // 🔥 IMPORTANT: no await
-        sendEmail(email, "🎉 Welcome to ZIVVI", html)
-            .catch(err => console.log("⚠️ Email failed:", err.message));
+        // ==============================
+        // 📤 6. SEND EMAIL (SAFE MODE)
+        // ==============================
+        try {
+            console.log("📧 Sending email to:", email);
+
+            await sendEmail(email, "🎉 Welcome to ZIVVI", html);
+
+            console.log("✅ Email sent successfully");
+
+        } catch (emailErr) {
+            console.error("❌ Email sending failed:", emailErr.message);
+
+            // ❗ IMPORTANT: user ko fail mat karo
+        }
 
         // ✅ 8. Success response (ALWAYS SUCCESS)
         return res.status(200).json({
