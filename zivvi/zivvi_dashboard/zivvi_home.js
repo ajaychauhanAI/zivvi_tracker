@@ -24,7 +24,7 @@ let currentFilters = {
     date: "all"
 };
 
-const BASE_URL = "https://zivvi-tracker.onrender.com"; // Backend URL - Change this to your actual backend URL
+const BASE_URL = "http://localhost:5000"; // Backend URL - Change this to your actual backend URL
 
 // ==============================
 // 📌 PAGE NAVIGATION SYSTEM
@@ -4051,27 +4051,38 @@ function renderPaymentAnalytics() {
         // ==============================
         // 🔥 CENTER TEXT PLUGIN
         // ==============================
-        const centerTextPlugin = {
-            id: "centerText",
-            beforeDraw(chart) {
-                const { width, height } = chart;
-                const ctx = chart.ctx;
+const centerTextPlugin = {
+    id: "centerText",
 
-                ctx.save();
+    afterDraw(chart) {
+        const { width, height, ctx } = chart;
 
-                ctx.font = "bold 20px sans-serif";
-                ctx.fillStyle = "#ffffff";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText(`₹${total.toLocaleString()}`, width / 2, height / 2 - 6);
+        ctx.save();
 
-                ctx.font = "10px sans-serif";
-                ctx.fillStyle = "#888";
-                ctx.fillText("Total Spend", width / 2, height / 2 + 14);
+        // 🔥 CRITICAL FIX (hover pe fade / color change issue)
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = "source-over";
 
-                ctx.restore();
-            }
-        };
+        // 🔥 LIGHT MODE DETECT (SAFE)
+        const isLight =
+            document.documentElement.classList.contains("light") ||
+            document.body.classList.contains("light");
+
+        // 🔥 MAIN AMOUNT
+        ctx.font = "bold 20px sans-serif";
+        ctx.fillStyle = isLight ? "#0f172a" : "#ffffff";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(`₹${total.toLocaleString()}`, width / 2, height / 2 - 6);
+
+        // 🔥 LABEL
+        ctx.font = "10px sans-serif";
+        ctx.fillStyle = isLight ? "#475569" : "#888";
+        ctx.fillText("Total Spend", width / 2, height / 2 + 14);
+
+        ctx.restore();
+    }
+};
 
         // ==============================
         // 📊 CREATE CHART
