@@ -218,7 +218,7 @@ node server.js
 ## 🔗 API Configuration
 
 ```js
-const BASE_URL = "https://your-backend.onrender.com"; //Backend URL
+const BASE_URL = "https://your-backend.onrender.com"; // TODO: Replace with your production backend URL (Render)
 ```
 
 ---
