@@ -42,6 +42,12 @@ pool.connect()
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
+        
+         // 🔥 FIX FOR OLD DATABASE
+         await pool.query(`
+            ALTER TABLE budget 
+            ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+         `);
 
         // 🔥 IMPORTANT: Ensure UNIQUE constraint (in case table already exists)
         await pool.query(`
