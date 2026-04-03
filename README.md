@@ -29,35 +29,6 @@ helping users **understand, control, and optimize their spending habits**.
 
 ---
 
-## 🎯 Core Features
-
-### 📊 Smart Expense Tracking
-- Real-time updates  
-- Smooth UI interactions  
-- Clean & distraction-free interface  
-
-### 📈 Advanced Analytics
-- Category-wise breakdown  
-- Interactive charts (Chart.js)  
-- Spending trends visualization  
-
-### 🧠 AI Insights
-- Financial score system  
-- Smart recommendations  
-- Behavior-based analysis  
-
-### 🔐 Secure Experience
-- Protected routes  
-- Safe session handling  
-- Clean authentication flow  
-
-### 📩 Weekly Reports
-- Automated summaries  
-- Insight-based emails  
-- Direct dashboard access  
-
----
-
 ## 🧩 Project Structure
 
 ```
@@ -234,16 +205,6 @@ const BASE_URL = "https://your-backend.onrender.com"; // TODO: Replace with your
 
 ---
 
-## 🧠 Future Enhancements
-
-* 🔮 AI prediction engine
-* 📱 Mobile app version
-* 🔗 Bank integration
-* 📊 Advanced analytics
-* 🔐 OAuth / Google login
-
----
-
 ## 🛡️ Security Notes
 
 * Never expose `.env` file
@@ -259,14 +220,6 @@ const BASE_URL = "https://your-backend.onrender.com"; // TODO: Replace with your
 * 🧠 Advanced AI Engine
 * 📊 Deep Analytics
 * 🔐 OAuth Login
-
----
-
-## 🛡️ Best Practices
-* Use HTTPS
-* Keep credentials safe
-* Validate inputs
-* Maintain session security
 
 ---
 
@@ -307,17 +260,4 @@ If you like this project:
 ZIVVI is not just an expense tracker —
 it's your **AI-powered financial assistant**.
 
-
 ---
-
-## 🔥 Next Level Upgrade (optional)
-
-Agar aap aur premium banana chahte ho to mai ye bhi de sakta hoon:
-
-- ✅ **Real GitHub badges (build, deploy, license auto)**  
-- 🎥 **Live demo GIF section**  
-- 📸 **Actual UI screenshots integration**  
-- 🌍 **Live project link button (CTA style)**  
-- 🧠 **Portfolio case-study version (placement ready)**  
-
-Bas bol dena — mai usko **startup-level branding README** bana dunga 🚀
