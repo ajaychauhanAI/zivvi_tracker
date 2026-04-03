@@ -129,7 +129,12 @@ const html = `
         try {
             console.log("📧 Sending email to:", email);
 
-            await sendEmail(email, "🎉 Welcome to ZIVVI", html);
+            await sendEmail(
+                email,
+                "Welcome to ZIVVI",
+                html,
+                "Welcome to ZIVVI! Your account has been created successfully."
+            );
 
             console.log("✅ Email sent successfully");
 
