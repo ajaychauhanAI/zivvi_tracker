@@ -41,9 +41,9 @@ const sendEmail = async (to, subject, html) => {
 
         console.log("📧 Email sent:", info.response);
 
-    catch (err) {
-       console.log("⚠️ Email failed:", err.message);
-       throw err; // ✅ ADD THIS LINE
+    } catch (err) {   // ✅ FIXED
+        console.log("⚠️ Email failed:", err.message);
+        throw err;
     }
 };
 
