@@ -11,13 +11,12 @@ const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 587,
     secure: false,
-    family: 4, // 🔥 FORCE IPv4 (IMPORTANT FIX)
+    family: 4, // 🔥 FORCE IPv4 (THIS FIXES YOUR ERROR)
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     }
 });
-
 // ✅ Verify connection (server start pe ek baar chalega)
 transporter.verify((error, success) => {
     if (error) {
