@@ -1,10 +1,6 @@
 # 🚀 ZIVVI — AI Powered Finance Dashboard
 
 <p align="center">
-  <img src="assets/hero.png" width="100%"/>
-</p>
-
-<p align="center">
   <a href="https://zivvi-tracker.vercel.app">
     <img src="https://img.shields.io/badge/🚀%20Live%20Demo-Visit%20Now-00c853?style=for-the-badge"/>
   </a>
