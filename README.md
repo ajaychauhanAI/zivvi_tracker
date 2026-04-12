@@ -1,6 +1,10 @@
 # 🚀 ZIVVI — AI Powered Finance Dashboard
 
 <p align="center">
+  <img src="assets/hero.png" width="100%"/>
+</p>
+
+<p align="center">
   <a href="https://zivvi-tracker.vercel.app">
     <img src="https://img.shields.io/badge/🚀%20Live%20Demo-Visit%20Now-00c853?style=for-the-badge"/>
   </a>
@@ -18,6 +22,13 @@
   Track • Analyze • Improve
 </p>
 
+## 🚧 Project Status
+
+ZIVVI is an actively evolving project.  
+We are continuously working on adding advanced features like AI improvements, chatbot enhancements, and real-world integrations to make it a complete financial assistant.
+
+Stay tuned for upcoming updates 🚀
+
 ---
 
 ## ✨ Product Vision
@@ -26,6 +37,57 @@ ZIVVI is built to simplify financial management using **modern UI + intelligent 
 
 It goes beyond expense tracking —  
 helping users **understand, control, and optimize their spending habits**.
+
+---
+
+## 📸 Project Preview
+
+### 🏠 Landing Page
+<p align="center">
+  <img src="assets/hero.png" width="100%"/>
+</p>
+
+---
+
+### 🔐 Login Page
+<p align="center">
+  <img src="assets/login.png" width="500"/>
+</p>
+
+---
+
+### 📊 Dashboard Overview
+<p align="center">
+  <img src="assets/dashboard.png" width="100%"/>
+</p>
+
+---
+
+### 📈 Deep Analytics
+<p align="center">
+  <img src="assets/analytics.png" width="100%"/>
+</p>
+
+---
+
+### 🧠 AI Insights & Heatmap
+<p align="center">
+  <img src="assets/insights.png" width="100%"/>
+</p>
+
+---
+
+### ⚙️ System Settings
+<p align="center">
+  <img src="assets/settings.png" width="100%"/>
+</p>
+
+---
+
+### 📘 Smart User Guide
+<p align="center">
+  <img src="assets/guide.png" width="100%"/>
+</p>
 
 ---
 
@@ -93,6 +155,12 @@ zivvi/
 * Finance score calculation
 * Smart recommendations
 * Spending pattern analysis
+
+### 🤖 AI Chatbot Assistant
+- Built-in intelligent chatbot for managing daily expenses  
+- Allows users to add expenses through simple conversational inputs  
+- Automatically categorizes basic transactions  
+- Improves user experience with quick and interactive financial assistance  
 
 ### 🔐 Security
 
