@@ -205,8 +205,6 @@ JWT_SECRET=your_secret_key
 
 EMAIL_USER=your_email
 EMAIL_PASS=your_email_password (app password)
-
-FRONTEND_URL=https://your-app.vercel.app
 ```
 
 Run server:
